@@ -1,0 +1,4 @@
+== orphans-report.md ==
+49 .campaign/graph/orphans-report.md
+== conclusion line ==
+人工核对（前 5 条，2026-09-21，ground truth=回读 fixture）：真孤儿 4 条（AC-1/10/11/12——契约层面为真、语义层面良性：AC 是终端验证项，本就无人引用）/ 误报 1 条（§6.1.2.3 = RFC 8445 的外部章节引用被 § 词法捕获，见 fixture:1099/2562；词法 v2 改进项：§ 匹配排除 RFC 前缀语境）。误报率 20% < 50% 阈值，不回炉。

@@ -1,0 +1,55 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|compact",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "C:/Program Files/Git/bin/bash.exe",
+            "args": ["${ZCODE_PLUGIN_ROOT}/hooks/handoff-inject.sh"],
+            "timeoutMs": 5000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "C:/Program Files/Git/bin/bash.exe",
+            "args": ["${ZCODE_PLUGIN_ROOT}/hooks/spec-lint.sh"],
+            "timeoutMs": 5000
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "C:/Program Files/Git/bin/bash.exe",
+            "args": ["${ZCODE_PLUGIN_ROOT}/hooks/spec-context.sh"],
+            "timeoutMs": 5000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "process",
+            "command": "C:/Program Files/Git/bin/bash.exe",
+            "args": ["${ZCODE_PLUGIN_ROOT}/hooks/spec-wrapup.sh"],
+            "timeoutMs": 5000
+          }
+        ]
+      }
+    ]
+  }
+}

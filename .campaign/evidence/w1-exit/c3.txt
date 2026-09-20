@@ -1,0 +1,11 @@
+== T3 v1 ==
+{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "# handoff — campaign 生存包\n\n> 更新人：编排者；更新时机：每个停止点与单元边界。hook 只读注入，不改写本文件。\n\n- 当前单元：w1-t3\n- 已过门：t2: 验证全过@2026-09-21\n- 待裁定：无\n- 下一步：跑通出口验证\n- ledger：/tmp/campaign-sb1/.campaign/ledger.jsonl\n\n\n> 以上来自 .campaign/handoff.md（campaign 生存包）"}}
+
+== T3 v2 bytes ==
+0
+== T3 v3 bytes ==
+0
+== T3 v4 ==
+1
+== T3 v5 ==
+1

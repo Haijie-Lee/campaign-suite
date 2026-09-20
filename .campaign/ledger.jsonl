@@ -1,0 +1,28 @@
+{"ts": "2026-09-21T01:01:56+08:00", "event": "unit_start", "unit": "t1"}
+{"ts": "2026-09-21T01:02:10+08:00", "event": "unit_start", "unit": "t1"}
+{"ts": "2026-09-21T01:02:10+08:00", "event": "verdict", "unit": "t1", "verdict": "pass"}
+{"ts": "2026-09-21T01:02:11+08:00", "event": "unit_end", "unit": "t1", "elapsed_s": 60}
+{"ts": "2026-09-21T01:13:59+08:00", "event": "unit_start", "unit": "campaign-w1", "plan": "C:/Users/Administrator/WorkBuddy/2026-09-20-21-39-26/campaign-W1建造plan.md"}
+{"ts": "2026-09-21T01:13:59+08:00", "event": "verdict", "unit": "campaign-w1", "verdict": "pass", "detail": "T1-T5 全部验证通过；fixture 孤儿报告误报率 20%"}
+{"ts": "2026-09-21T01:13:59+08:00", "event": "unit_end", "unit": "campaign-w1", "elapsed_s": 5400, "detail": "证据归档 .campaign/evidence/w1-exit/c1-c4.txt"}
+{"ts": "2026-09-21T01:21:04+08:00", "event": "ruling", "unit": "campaign-w1", "detail": "狗食自检抓真 bug：MSYS /c/ 路径进 Windows python open() 静默失败，hook 加 cygpath -w 归一化修复并回归通过；另确认 PWD 兜底链按设计生效（not-json 测试在含 handoff 的 CWD 下输出非零属预期）"}
+{"ts": "2026-09-21T02:31:36+08:00", "event": "unit_start", "unit": "w2-t1"}
+{"ts": "2026-09-21T02:31:37+08:00", "event": "unit_end", "unit": "w2-t1", "elapsed_s": 1500, "detail": "doc_graph v1.1: RFC 排除 + profile 子命令; V1-V4 全过 (edges 744->742, profile 4 行, FR=124)"}
+{"ts": "2026-09-21T02:38:40+08:00", "event": "unit_start", "unit": "w2-t2"}
+{"ts": "2026-09-21T02:38:41+08:00", "event": "unit_end", "unit": "w2-t2", "elapsed_s": 1800, "detail": "spec-lint.sh + hooks.json(PostToolUse) + spec-lint.md; V1-V6 全过"}
+{"ts": "2026-09-21T02:41:10+08:00", "event": "unit_start", "unit": "w2-t3"}
+{"ts": "2026-09-21T02:41:10+08:00", "event": "unit_end", "unit": "w2-t3", "elapsed_s": 1200, "detail": "spec-context.sh + hooks.json(PreToolUse) + spec-context.md; V1-V5 全过"}
+{"ts": "2026-09-21T02:48:30+08:00", "event": "unit_start", "unit": "w2-t4"}
+{"ts": "2026-09-21T02:48:31+08:00", "event": "unit_end", "unit": "w2-t4", "elapsed_s": 1500, "detail": "spec-wrapup.sh + hooks.json(K11 定稿四块) + spec-wrapup.md; V1-V5 全过; 修复: json 紧凑分隔符 + ACTIVE 管道 tr -d CR"}
+{"ts": "2026-09-21T02:51:21+08:00", "event": "unit_start", "unit": "w2-t5"}
+{"ts": "2026-09-21T02:51:21+08:00", "event": "ruling", "unit": "w2-t5", "detail": "plan V4 断言 head -3 取样假设过强（模板合理结构=标题+说明+表头第5-6行）；验证意图(表头逐字=K8/K9)不变，取样改全文 grep——rulings not stalls"}
+{"ts": "2026-09-21T02:51:22+08:00", "event": "unit_end", "unit": "w2-t5", "elapsed_s": 900, "detail": "ingest-forge SKILL.md + 2 模板; V1-V4 全过(V4 取样方式按 ruling 修正)"}
+{"ts": "2026-09-21T02:59:23+08:00", "event": "unit_start", "unit": "w2-t6"}
+{"ts": "2026-09-21T02:59:24+08:00", "event": "ruling", "unit": "w2-t6", "detail": "K9 单元格竖线契约由 \\| 改全角 ｜（awk 按字面切分会假失败）+ q-check 断言加 grep '^|' 过滤非表行——验证意图不变，两处同步修 plan/SKILL.md/产物"}
+{"ts": "2026-09-21T02:59:24+08:00", "event": "unit_end", "unit": "w2-t6", "elapsed_s": 2400, "detail": "fixture 自验证五步全过: 覆盖率 13/13, 一致率 12/13≈0.923(附录B=基准缺陷裁定), Q 表 3 条(Q16/Q17 真实注册表矛盾), 三证齐"}
+{"ts": "2026-09-21T02:59:24+08:00", "event": "unit_start", "unit": "campaign-w2", "plan": "C:/Users/Administrator/WorkBuddy/2026-09-20-21-39-26/campaign-W2建造plan.md"}
+{"ts": "2026-09-21T02:59:24+08:00", "event": "verdict", "unit": "campaign-w2", "verdict": "pass", "detail": "T1-T6 全部验证通过"}
+{"ts": "2026-09-21T02:59:25+08:00", "event": "unit_end", "unit": "campaign-w2", "elapsed_s": 9300, "detail": "证据归档 .campaign/evidence/w2-exit/c1-c4.txt"}
+{"ts": "2026-09-21T05:08:12+08:00", "event": "ruling", "unit": "campaign-w2", "detail": "plan-forge 元观察回写本体完成：v1.7.0->v1.8.0（机制局限+修复回读纪律+严重度衰减退出条款，证据=W1五轮/W2四轮闸口轨迹）"}
+{"ts": "2026-09-21T05:08:13+08:00", "event": "ruling", "unit": "campaign-w2", "detail": "fixture Q16/Q17 双行矛盾修复：待定行改号 Q18/Q19（行413-416），前言留痕；doc_graph 实测 duplicates 从 5 项(Q16/Q17+FR-8/9/10) 降至 3 项(FR-8/9/10=组ID加粗叙事误判，既有解析器假阳性，已登记词法v1.2候选)"}
+{"ts": "2026-09-21T05:13:54+08:00", "event": "ruling", "unit": "campaign", "detail": "插件正式定名 campaign（待决事项①关闭，用户裁定 2026-09-21）；skills 命名沿用 ingest-forge/spec-forge 等组件名不变"}

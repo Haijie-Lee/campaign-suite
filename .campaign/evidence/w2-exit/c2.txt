@@ -1,0 +1,30 @@
+== W2 c2: ingest 产物清单与一致率 ==
+/tmp/campaign-sb5/.campaign/ingest/aerofold/:
+total 13
+drwxr-xr-x 1 Administrator 197121    0 Sep 21 02:54 .
+drwxr-xr-x 1 Administrator 197121    0 Sep 21 02:51 ..
+-rw-r--r-- 1 Administrator 197121 1597 Sep 21 02:54 evidence-register.md
+drwxr-xr-x 1 Administrator 197121    0 Sep 21 02:58 exit
+-rw-r--r-- 1 Administrator 197121 1808 Sep 21 02:53 mapping.md
+-rw-r--r-- 1 Administrator 197121  168 Sep 21 02:51 profile.md
+-rw-r--r-- 1 Administrator 197121 1511 Sep 21 02:56 q-table.md
+
+/tmp/campaign-sb5/.campaign/ingest/aerofold/exit/:
+total 13
+drwxr-xr-x 1 Administrator 197121    0 Sep 21 02:58 .
+drwxr-xr-x 1 Administrator 197121    0 Sep 21 02:54 ..
+-rw-r--r-- 1 Administrator 197121 1784 Sep 21 02:58 consistency.md
+-rw-r--r-- 1 Administrator 197121 2249 Sep 21 02:54 coverage.txt
+-rw-r--r-- 1 Administrator 197121 2177 Sep 21 02:54 lint.txt
+-rw-r--r-- 1 Administrator 197121  103 Sep 21 02:57 q-check.txt
+
+profile.md:
+ids: FR=124 NFR=33 R=22 D=20 C=8 Q=17 AC=36
+evidence_lines: 274 (19% of 1449 content lines)
+decisions: C=8 D=20 Q=17
+weak_words: 10 hits (7-word list)
+sections: 13
+
+一致率: 12/13 ≈ 0.923 ≥ 0.8（附录B 不一致项=基准缺陷裁定，见 consistency.md）
+映射覆盖率: 13/13 = 100%
+q-table: 3 条（Q16/Q17 注册表双行矛盾【真实缺陷】+ Q100 弱词）
