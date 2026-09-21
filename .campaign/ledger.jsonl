@@ -26,3 +26,10 @@
 {"ts": "2026-09-21T05:08:12+08:00", "event": "ruling", "unit": "campaign-w2", "detail": "plan-forge 元观察回写本体完成：v1.7.0->v1.8.0（机制局限+修复回读纪律+严重度衰减退出条款，证据=W1五轮/W2四轮闸口轨迹）"}
 {"ts": "2026-09-21T05:08:13+08:00", "event": "ruling", "unit": "campaign-w2", "detail": "fixture Q16/Q17 双行矛盾修复：待定行改号 Q18/Q19（行413-416），前言留痕；doc_graph 实测 duplicates 从 5 项(Q16/Q17+FR-8/9/10) 降至 3 项(FR-8/9/10=组ID加粗叙事误判，既有解析器假阳性，已登记词法v1.2候选)"}
 {"ts": "2026-09-21T05:13:54+08:00", "event": "ruling", "unit": "campaign", "detail": "插件正式定名 campaign（待决事项①关闭，用户裁定 2026-09-21）；skills 命名沿用 ingest-forge/spec-forge 等组件名不变"}
+{"ts": "2026-09-21T06:27:33+08:00", "event": "unit_start", "unit": "campaign-w3", "plan": "C:/Users/Administrator/WorkBuddy/2026-09-20-21-39-26/campaign-W3建造plan.md"}
+{"ts": "2026-09-21T12:49:11+08:00", "event": "ruling", "unit": "campaign-w3", "detail": "T5 GATE 裁定：Q100=分支A（M5 交付物列补 NFR-2.1/2.5/2.6 量化指针）；范围=仅 Q100；写入=直接改 fixture 原件。用户显式三选（全部按推荐）"}
+{"ts": "2026-09-21T12:52:54+08:00", "event": "gate", "unit": "campaign-w3", "detail": "T5 工序3 锻打停止点：声部A/声部B/B5 三派遣齐遇 429 额度已用尽（子代理创建即失败，无转写可验尸；定性=配置类）。ritual 纪律：配置类上报用户 + 链尽须用户裁定；D4 禁止静默降级。等待裁定"}
+{"ts": "2026-09-21T12:57:09+08:00", "event": "ruling", "unit": "campaign-w3", "detail": "K18 plugin.json 终裁=保留（用户显式，闸口②建议采纳）；429 处置=恢复额度后重试（用户显式）"}
+{"ts": "2026-09-21T13:14:14+08:00", "event": "verdict", "unit": "campaign-w3", "verdict": "pass", "detail": "出口判据全过：①spec-forge 完成 v0.6 真实修订全流程（GATE→选材→制坯→锻打双声部+B5→彩排→落盘→图重建，profile C=9/Q=20/duplicates=3）；②修订模式 delta 范围正确（V1 changed_ids 全集/V2 ripple 归一化交叉核对/V3 sample 计数重算三机械断言 PASS + REVISION 实战审计 V06-R1 两项 SINGLE 裁定留档）。T1-T6 验证矩阵全绿"}
+{"ts": "2026-09-21T13:14:15+08:00", "event": "unit_end", "unit": "campaign-w3", "detail": "证据归档 .campaign/evidence/w3-exit/c1-c4.txt + t5 三件 + review-logs/aerofold-v06.md"}
+{"ts": "2026-09-21T13:14:36+08:00", "event": "ruling", "unit": "campaign-w3", "detail": "执行期抓到 plan 自身缺陷：T6 step4 c2 聚合块 orphans --out 未 cygpath（K0-2），Windows python 把 /tmp 解析到 C:\\tmp 致 c2 缺 orphans 节；已修执行并回修 plan 文本"}

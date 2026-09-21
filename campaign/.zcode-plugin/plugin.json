@@ -1,0 +1,5 @@
+{
+  "name": "campaign",
+  "version": "0.3.0",
+  "description": "Mega-scale development task orchestration suite layered on caliber: doc-graph/run-ledger/handoff/spec-guard hooks/ingest-forge/spec-forge/evidence-auditor — file-system-as-truth, evidence-gated state transitions"
+}
