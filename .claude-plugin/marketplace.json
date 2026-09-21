@@ -1,0 +1,11 @@
+{
+  "name": "campaign-suite",
+  "plugins": [
+    {
+      "name": "campaign",
+      "version": "0.3.0",
+      "description": "超大规模开发任务编排套件（layered on caliber）：ingest-forge / spec-forge / program-forge 三 skills + evidence-auditor agent + 四个 spec 守护 hook + 五个零依赖契约工具——文件系统即真相、证据门控状态迁移",
+      "source": "./campaign"
+    }
+  ]
+}
