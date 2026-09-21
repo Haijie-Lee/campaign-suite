@@ -1,0 +1,39 @@
+# C6 验收基座首跑汇总  2026-09-21T14:50:39
+| AC | 退出态 | 摘要 |
+|---|---|---|
+| AC-01 | BLOCKED-ENV | BLOCKED-ENV: 双端异运营商真实网络 |
+| AC-02 | BLOCKED-IMPL | BLOCKED-IMPL: AeroFold 产品（M1–M3 交付物） 未构建 |
+| AC-03 | BLOCKED-IMPL | BLOCKED-IMPL: AeroFold 产品（M1–M3 交付物） 未构建 |
+| AC-04 | BLOCKED-IMPL | BLOCKED-IMPL: AeroFold 产品（M1–M3 交付物） 未构建 |
+| AC-05 | BLOCKED-IMPL | BLOCKED-IMPL: AeroFold 产品（M1–M3 交付物） 未构建 |
+| AC-06 | BLOCKED-IMPL | BLOCKED-IMPL: AeroFold 产品（M1–M3 交付物） 未构建 |
+| AC-07 | BLOCKED-IMPL | BLOCKED-IMPL: AeroFold 产品（M1–M3 交付物） 未构建 |
+| AC-08 | BLOCKED-IMPL | BLOCKED-IMPL: AeroFold 产品（M1–M3 交付物） 未构建 |
+| AC-09 | BLOCKED-IMPL | BLOCKED-IMPL: AeroFold 产品（M1–M3 交付物） 未构建 |
+| AC-10 | BLOCKED-IMPL | BLOCKED-IMPL: AeroFold 产品（M1–M3 交付物） 未构建 |
+| AC-11 | BLOCKED-IMPL | BLOCKED-IMPL: AeroFold 产品（M1–M3 交付物） 未构建 |
+| AC-12 | BLOCKED-IMPL | BLOCKED-IMPL: AeroFold 产品（M1–M3 交付物） 未构建 |
+| AC-13 | BLOCKED-ENV | BLOCKED-ENV: 不少于 30 组真实网络组合（家庭宽带 × 运营商 × 有无 IPv6 × NAT 类型） |
+| AC-14 | BLOCKED-ENV | BLOCKED-ENV: 同 AC-13 测试矩阵 |
+| AC-15 | BLOCKED-ENV | BLOCKED-ENV: 可控 IPv6 可达/不可达双环境 |
+| AC-16 | BLOCKED-ENV | BLOCKED-ENV: 传输环境 + 抓包工具 |
+| AC-17 | BLOCKED-ENV | BLOCKED-ENV: 限速构造环境（直连 3 Mbps、中继 50 Mbps） |
+| AC-18 | BLOCKED-ENV | BLOCKED-ENV: 传输中强制断开直连的构造环境 |
+| AC-19 | BLOCKED-ENV | BLOCKED-ENV: 中继不可用网络环境 |
+| AC-20 | BLOCKED-ENV | BLOCKED-ENV: 全部直连失败的构造环境 |
+| AC-21 | BLOCKED-ENV | BLOCKED-ENV: 双端对称型 NAT 环境 |
+| AC-22 | BLOCKED-ENV | BLOCKED-ENV: 屏蔽 UDP 的企业/校园网 |
+| AC-23 | BLOCKED-ENV | BLOCKED-ENV: 可切换链路类型的环境 |
+| AC-24 | PASS | PASS: 200 ms 预算内快速判定不可用（elapsed=0.001s） |
+| AC-25 | PASS | PASS: 双栈监听 v4/v6 均可连接（only_v6=False 显式设置生效） |
+| AC-26 | PASS | PASS: 候选列表无幽灵段（fe80/2001::/32/2002::/16/fd00 均被剔除） |
+| AC-27 | BLOCKED-ENV | BLOCKED-ENV: 仅 IPv6 出口（NAT64）网络 |
+| AC-28 | PASS | PASS: /64 聚合限流不被轮换绕过，且跨 /64 不误伤（朴素单地址实现被绕过——对照成立） |
+| AC-29 | BLOCKED-ENV | BLOCKED-ENV: 直连全败 + 中继限速 3 Mbps 构造环境 |
+| AC-30 | BLOCKED-ENV | BLOCKED-ENV: 同 AC-29 环境 + 抓包 |
+| AC-31 | BLOCKED-ENV | BLOCKED-ENV: 3 个中继节点限速构造环境 |
+| AC-32 | BLOCKED-ENV | BLOCKED-ENV: 可解除限速/换端口的构造环境 |
+| AC-33 | BLOCKED-ENV | BLOCKED-ENV: NAT 映射 30 s 回收构造环境 |
+| AC-34 | BLOCKED-ENV | BLOCKED-ENV: 路径质量降级构造环境 |
+| AC-35 | BLOCKED-ENV | BLOCKED-ENV: 可丢弃指定控制帧的构造环境 |
+| AC-36 | BLOCKED-ENV | BLOCKED-ENV: 同 AC-08 用例 + 中继路径 |

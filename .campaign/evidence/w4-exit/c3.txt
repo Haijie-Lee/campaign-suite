@@ -1,0 +1,9 @@
+program: aerofold-m0  (reconcile_every=5 last_reconciled=0)
+U-M0-01    complete    depends=-            需求冻结：§3.4 剩余待定项（Q18/Q19）对齐清零
+U-M0-02    pending     depends=U-M0-01      API 契约定版（接口文档）
+U-M0-03    pending     depends=U-M0-01      UI 原型（C7 体检入口/报告卡片 + C8 降级因果链/前置确认弹窗）
+U-M0-04    pending     depends=U-M0-01      技术栈 PoC（Rust/Go/Python）与决策记录
+U-M0-05    pending     depends=U-M0-01      P2P 引擎 PoC（iroh 国内实测 + 双栈 socket + Teredo/6to4 过滤）
+U-M0-06    pending     depends=U-M0-05      链路体检探针参数标定（C7 时间窗假设）
+U-M0-07    pending     depends=U-M0-05      中继限速裁决（C8/R22/D20：5/15/30/60s 吞吐曲线 + 节点择优收益）
+eligible: U-M0-02, U-M0-03, U-M0-04, U-M0-05

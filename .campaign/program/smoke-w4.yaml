@@ -1,0 +1,54 @@
+program: smoke-w4
+context: C:/Users/Administrator/WorkBuddy/2026-09-20-21-39-26/campaign-W4建造plan.md
+created: 2026-09-21
+reconcile_every: 5
+last_reconciled: 5
+units:
+  - id: S1
+    title: 本机 IPv6 能力画像调研（research note）
+    status: complete
+    depends: []
+    parallel: "-"
+    gate: [C:/Users/Administrator/AppData/Local/Temp/campaign-w4/smoke/s1-note.md]
+    brief: .campaign/program/S1-brief.md
+    result: .campaign/program/S1-result.md
+    budget_s: 600
+  - id: S2
+    title: ipv6_probe.py（接口枚举+幽灵地址过滤+200ms 可达探测）
+    status: complete
+    depends: [S1]
+    parallel: "-"
+    gate: [C:/Users/Administrator/AppData/Local/Temp/campaign-w4/smoke/ipv6_probe.py, C:/Users/Administrator/AppData/Local/Temp/campaign-w4/smoke/s2-selftest.txt]
+    brief: .campaign/program/S2-brief.md
+    result: .campaign/program/S2-result.md
+    plan: C:/Users/Administrator/AppData/Local/Temp/campaign-w4/smoke/s2-plan.md
+    budget_s: 1800
+  - id: S3
+    title: AC-25/AC-26 真实验收 skeleton 接入 run_all
+    status: complete
+    depends: [S2]
+    parallel: "-"
+    gate: [C:/Users/Administrator/AppData/Local/Temp/campaign-w4/smoke/s3-ac-run.txt]
+    brief: .campaign/program/S3-brief.md
+    result: .campaign/program/S3-result.md
+    plan: C:/Users/Administrator/AppData/Local/Temp/campaign-w4/smoke/s3-plan.md
+    budget_s: 1200
+  - id: S4
+    title: S2 plan 修订（探针超时常数 200ms 改为可配置）
+    status: complete
+    depends: [S2]
+    parallel: "-"
+    gate: [C:/Users/Administrator/AppData/Local/Temp/campaign-w4/smoke/s2-plan-v2.md]
+    brief: .campaign/program/S4-brief.md
+    result: .campaign/program/S4-result.md
+    plan: C:/Users/Administrator/AppData/Local/Temp/campaign-w4/smoke/s2-plan-v2.md
+    budget_s: 900
+  - id: S5
+    title: 冒烟收尾报告（状态机一致性+A1-A6 复核+成本账偏差）
+    status: complete
+    depends: [S3, S4]
+    parallel: "-"
+    gate: [C:/Users/Administrator/AppData/Local/Temp/campaign-w4/smoke/s5-report.md]
+    brief: .campaign/program/S5-brief.md
+    result: .campaign/program/S5-result.md
+    budget_s: 900
