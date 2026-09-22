@@ -1,4 +1,0 @@
-ids: FR=124 NFR=33 R=22 D=20 C=11 Q=20 AC=36
-evidence_lines: 277 (19% of 1453 content lines)
-decisions: C=11 D=20 Q=20
-weak_words: 15 hits (7-word list)

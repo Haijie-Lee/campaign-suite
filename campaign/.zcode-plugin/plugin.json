@@ -1,5 +1,5 @@
 {
   "name": "campaign",
-  "version": "0.3.0",
-  "description": "Mega-scale development task orchestration suite layered on caliber: doc-graph/run-ledger/handoff/spec-guard hooks/ingest-forge/spec-forge/evidence-auditor — file-system-as-truth, evidence-gated state transitions"
+  "version": "0.4.0",
+  "description": "Mega-scale development task orchestration suite layered on caliber: campaign entry router (域判定 → ingest-forge/spec-forge/program-forge) + doc-graph/run-ledger/handoff/spec-guard hooks/evidence-auditor — file-system-as-truth, evidence-gated state transitions"
 }

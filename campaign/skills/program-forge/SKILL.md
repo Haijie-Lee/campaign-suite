@@ -15,6 +15,7 @@ metadata:
 ## 输入
 
 - `.campaign/program/<name>.yaml`：程序定义（DAG），schema 见契约 K19。
+- 首次创建 `.campaign/` 时：项目根存在 `.git` 目录且 `.gitignore` 无 `.campaign/` 行 → 追加一行 `.campaign/`；无 `.git` → 跳过并输出一行说明（程序状态与证据不入 git）。
 - 工具：`campaign/tools/program.py`（状态机，九子命令 + impact）、
   `campaign/tools/ledger.py`（wave 账本）、`campaign/tools/doc_graph.py`（SRS 定位）、
   `campaign/tools/spec_impact.py`（B6 反向互查）。

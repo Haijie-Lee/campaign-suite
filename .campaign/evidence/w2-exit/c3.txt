@@ -1,8 +1,0 @@
-== W2 c3: 出口三证摘要 ==
---- lint.txt 标签分布 ---
-     44 defined_unreferenced
-      3 duplicate_definition
---- coverage.txt FR-10.8 行 ---
-FR-10.8	AC-36
---- q-check.txt ---
-q-check: header OK; table-rows NF!=8 = 0 (fixture self-verification exemption: format compliance only)

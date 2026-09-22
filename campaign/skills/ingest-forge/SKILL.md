@@ -23,6 +23,7 @@ metadata:
 - **输入**：源文档路径。
 - **动作**：跑机械画像 + 通读全文形成质量印象（哪些章节需求密集、哪些是证据、哪些是决策叙事）。
 - **产出**：`.campaign/ingest/<slug>/profile.md`。
+- **首次创建 `.campaign/` 时**：项目根存在 `.git` 目录且 `.gitignore` 无 `.campaign/` 行 → 追加一行 `.campaign/`；无 `.git` → 跳过并输出一行说明（运行工件不入 git）。
 - **机械支撑**：
   ```bash
   python campaign/tools/doc_graph.py profile <源文档> > .campaign/ingest/<slug>/profile.md

@@ -1,8 +1,0 @@
-== ① program impact（aerofold-m0 在途池，预期 no impact——其余单元 plan 字段尚空）==
-no impact
-== ② spec_impact scan（W3 plan，预期命中 Q18/Q19 修复史）==
-| ID | 命中 plan | 命中行号 | 行摘录 |
-|---|---|---|---|
-| Q19 | C:/Users/Administrator/WorkBuddy/2026-09-20-21-39-26/campaign-W3建造plan.md | 7 | > 执行前提：插件仓库 = `C:\WorkSpace\campaign-suite`（Git Bash `/c/WorkSpace/campaign-suite`）；**除 T4 合成 fixture（`/tmp/campaign-w3/ |
-| Q19 | C:/Users/Administrator/WorkBuddy/2026-09-20-21-39-26/campaign-W3建造plan.md | 116 | - **机械期望（两分支预锁）**：doc_graph 重建后 duplicates ≤ 3（FR-8/9/10 既有假阳性不增）；profile ids 变化 = 分支 A/B 均 `C=8→9、Q=19→20`（基线 Q=19 = 注册 |
-| Q19 | C:/Users/Administrator/WorkBuddy/2026-09-20-21-39-26/campaign-W3建造plan.md | 248 | 8. fixture 实况：行 3 版本行 v0.5；§3.4 注册表 Q1–Q19（行 398–416）；NFR-2.11 阈值行（行 371，`< 10%` → S-C 档）；§8.1 M5 行（行 2250）；节拓扑 13 个 `## |

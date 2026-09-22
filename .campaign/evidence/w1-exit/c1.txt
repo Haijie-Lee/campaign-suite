@@ -1,8 +1,0 @@
-$ python campaign/tools/ledger.py current
-idle
-$ python campaign/tools/ledger.py summary
-t1	4	60
-2026-09-21T01:01:56+08:00 unit_start t1 -
-2026-09-21T01:02:10+08:00 unit_start t1 -
-2026-09-21T01:02:10+08:00 verdict t1 -
-2026-09-21T01:02:11+08:00 unit_end t1 -
