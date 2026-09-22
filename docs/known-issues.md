@@ -90,7 +90,7 @@
 - **现象**：ac-91 六态覆盖 cmd_brief 三态 + gate 通过/失败 + validate WARN，但「未配置 lint_cmd 的程序 gate 输出与改造前逐字节一致」这一 opt-in 约束的 gate 半侧无永久回归态（仅 T3 实现期手工验证一次留痕，validate 半侧有态 6）。
 - **来源**：plan 锁定六态结构（计划强制，2026-09-22 终审评估 T4② 裁定入册不升档——加第 7 态 = 偏离绑定权威）。
 - **处置方向**：ac-91 获 plan 级修订授权重开态结构时补第 7 态（同态 2 fixture、无 lint_cmd 跑 gate，断言 stdout/ledger 与基线逐字节一致）。
-- **状态**：open。重访触发 = program.py cmd_gate（或 gate 账本路径）行为下次被触碰，或 ac-91 获 plan 级修订授权时。注意：本触发不因消息/rc 级修整（如 2026-09-22 final fix）而点火。
+- **状态**：closed（2026-09-22）——重访触发命中（cmd_gate env 钩子契约改动 + ac-91 态结构经用户授权重开）；处置方向已落地：ac-91 补态 7（CAMPAIGN_UNIT/PROGRAM/WS env 契约回归）+ 态 8（无 lint_cmd gate 的 stdout/prog.yaml/ledger 事件序列逐字节守护，ledger ts 字段除外）。
 
 ## KI-14 ingest-forge SKILL.md 判别指引行 `。；` 标点瑕疵
 

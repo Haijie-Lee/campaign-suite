@@ -18,7 +18,10 @@ metadata:
   - meta 顶级键：`program` / `context` / `created` / `reconcile_every` /
     `last_reconciled`；可选 `conventions:` = 约定文件路径覆盖（缺省
     `CONVENTIONS.md`，工程根）；可选 `lint_cmd:` = gate 复跑的 lint
-    命令行（缺席、空值或 `-` = 不跑）。
+    命令行（缺席、空值或 `-` = 不跑；gate 执行时向子进程注入
+    CAMPAIGN_UNIT / CAMPAIGN_PROGRAM / CAMPAIGN_WS 三环境变量——
+    检查脚本据此定位当前单元、程序文件与工程根；多项检查用 wrapper
+    脚本收口）。
   - unit 键：`id` / `title` / `status`（pending/in_progress/complete/blocked）/
     `depends` `gate`（inline list）/ `parallel`（v1 恒 `-`）/ `brief` /
     `result` / `plan` / `budget_s`。

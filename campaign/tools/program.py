@@ -352,9 +352,16 @@ def cmd_gate(args):
     # K7：lint_cmd 门（M4）——基本 missing 为空且配置了 lint_cmd 才执行
     lc = _lint_cmd(prog)
     if lc is not None and not missing:
+        # 钩子契约：检查脚本凭 CAMPAIGN_UNIT/PROGRAM/WS 定位当前单元、
+        # 程序文件与工程根，免反向解析程序状态文件
+        env = dict(os.environ)
+        env["CAMPAIGN_UNIT"] = u["id"]
+        env["CAMPAIGN_PROGRAM"] = os.path.abspath(args.program)
+        env["CAMPAIGN_WS"] = os.path.abspath(os.getcwd())
         try:
             r = subprocess.run(lc, shell=True, capture_output=True, text=True,
-                               encoding="utf-8", errors="replace", timeout=300)
+                               encoding="utf-8", errors="replace", timeout=300,
+                               env=env)
         except subprocess.TimeoutExpired as e:
             tail = ((e.stdout or "") + (e.stderr or ""))[-500:]
             missing.append("lint_cmd 失败(rc=timeout>300s): %s" % tail)

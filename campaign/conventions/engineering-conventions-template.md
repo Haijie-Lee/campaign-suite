@@ -23,4 +23,7 @@
 作用面，例：`- [仅 server/internal/ws/] 帧处理不得触碰业务状态`）
 
 ## 可执行检查
-（lint_cmd 建议值 = 开发者日常在仓库根运行的同一命令行，例 `golangci-lint run`）
+（lint_cmd 建议值 = 开发者日常在仓库根运行的同一命令行，例 `golangci-lint run`；
+多项机械检查用 wrapper 脚本收口——lint_cmd 指向它，内部依序跑各检查、任一非零
+即非零出。gate 执行时注入 CAMPAIGN_UNIT / CAMPAIGN_PROGRAM / CAMPAIGN_WS，
+检查脚本据此定位当前单元、程序文件与工程根，例：对账 .caliber 单元台账）

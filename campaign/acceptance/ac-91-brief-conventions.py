@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """ac-91 brief-conventions acceptance —— program.py cmd_brief 工程约定注入（K1/K3）、
-lint() K6 WARN、cmd_gate lint_cmd 门（K7）的永久回归保护。六态逐字：
+lint() K6 WARN、cmd_gate lint_cmd 门（K7）+ env 钩子契约、无 lint_cmd gate
+逐字节守护（KI-13 关闭态）的永久回归保护。八态逐字：
 
   1. 注入态：tmp 根 CONVENTIONS.md 两行 → brief 含「## 工程约定」(恰 1)、两行约定、
      派生声明行(恰 1)、「约束符合：产物不得违反」、「- D1 事实源」(D1–D4 回归)；
@@ -16,6 +17,13 @@ lint() K6 WARN、cmd_gate lint_cmd 门（K7）的永久回归保护。六态逐�
      「lint_cmd 失败(rc=3)」、prog.yaml 仍含「    status: in_progress」（状态未迁移）。
   6. validate WARN 态（K6 回归保护）：同态 2（无 CONVENTIONS.md、无 lint_cmd）
      → rc=0、stdout 含逐字 K6 WARN、末行 ==「OK: 1 units, schema+lint pass」。
+  7. env 契约态：lint_cmd 子进程断言 CAMPAIGN_UNIT=='U-1'、CAMPAIGN_PROGRAM
+     以 prog.yaml 结尾、CAMPAIGN_WS isdir（违约 exit 7）→ gate rc=0，
+     且 env.out 三值逐字/路径规范化命中期望。
+  8. 无 lint_cmd 逐字节守护态（KI-13 关闭）：同态 4 fixture 去掉 lint_cmd
+     → gate rc=0、stdout == 「U-1: in_progress -> complete (gate PASS)」逐字、
+     prog.yaml 与 fixture(status=complete) 逐字节一致、ledger 事件序列 ==
+     [(gate,U-1,PASS), (unit_end,U-1)]（ts 字段除外）。
 
 编码纪律：所有 open() 显式 encoding='utf-8'；subprocess 用 text=True,
 encoding='utf-8', errors='replace' 且 try/except 包住；fixture yaml 写文件用
@@ -23,9 +31,10 @@ newline='\n'，yaml 字符串零注释（# 起始行）与零制表符。每态�
 tempfile.TemporaryDirectory()；调 program.py 一律
 [sys.executable, PROGRAM_PY, <cmd>, "--program", "prog.yaml"] + 追加参数，cwd=tmp。
 
-打印顺序：先收集六态结果，首行总结行，随后六态明细（ok <n> / BAD <n>）。
+打印顺序：先收集八态结果，首行总结行，随后八态明细（ok <n> / BAD <n>）。
 任一 BAD → 首行 FAIL、exit 1；全过 → 首行 PASS、exit 0（run_all.py 归类契约）。
 """
+import json
 import os
 import subprocess
 import sys
@@ -227,6 +236,79 @@ def check6():
     return True, "validate WARN：K6 逐字 + 末行 OK"
 
 
+# 态 7 fixture 脚本：子进程自检 env 契约三键并落 env.out；违约 exit 7。
+# 走脚本文件而非 python -c 单行——cmd.exe 引号/管道折叠会截断复杂 payload。
+ENV_CHECK_PY = ("\n".join([
+    "import os, sys",
+    'u = os.environ.get("CAMPAIGN_UNIT", "")',
+    'p = os.environ.get("CAMPAIGN_PROGRAM", "")',
+    'w = os.environ.get("CAMPAIGN_WS", "")',
+    'with open("env.out", "w", encoding="utf-8") as f:',
+    '    f.write(u + "|" + p + "|" + w)',
+    'sys.exit(0 if (u == "U-1" and p.endswith("prog.yaml") '
+    'and os.path.isdir(w)) else 7)',
+]) + "\n")
+
+
+def check7():
+    """态 7 env 契约态：gate 执行 lint_cmd 时注入 CAMPAIGN_UNIT/PROGRAM/WS。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        write_fixture(tmp, meta_lint="python check_env.py", status="in_progress",
+                      unit_extra=("    gate: [evidence.txt]", "    result: result.md"))
+        write_text(os.path.join(tmp, "check_env.py"), ENV_CHECK_PY)
+        write_text(os.path.join(tmp, "evidence.txt"), "evidence\n")
+        write_text(os.path.join(tmp, "result.md"), "# result\n")
+        r, err = run_prog("gate", tmp, "--unit", "U-1")
+        if err:
+            return False, "program.py 调用异常: %s" % err
+        if r.returncode != 0:
+            return False, "gate rc=%d（应 0；rc=7 = env 契约违约）stdout=%r stderr=%r" % (
+                r.returncode, r.stdout, r.stderr)
+        ep = os.path.join(tmp, "env.out")
+        if not os.path.isfile(ep):
+            return False, "env.out 未写出（lint_cmd 未跑？）"
+        u, p, w = (read_text(ep).split("|") + ["", "", ""])[:3]
+        if u != "U-1":
+            return False, "CAMPAIGN_UNIT %r（应 'U-1'）" % u
+        same = lambda a, b: os.path.normcase(os.path.realpath(a)) == os.path.normcase(os.path.realpath(b))
+        if not (p.endswith("prog.yaml") and same(p, os.path.join(tmp, "prog.yaml"))):
+            return False, "CAMPAIGN_PROGRAM %r 未指向 %s" % (p, os.path.join(tmp, "prog.yaml"))
+        if not same(w, tmp):
+            return False, "CAMPAIGN_WS %r 未指向工程根 %s" % (w, tmp)
+    return True, "env 契约：CAMPAIGN_UNIT 逐字 + PROGRAM/WS 路径规范化命中"
+
+
+def check8():
+    """态 8 无 lint_cmd 逐字节守护（KI-13 关闭态）：gate stdout/prog.yaml/
+    ledger 事件序列与基线逐字节一致（ledger ts 字段除外）。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        extras = ("    gate: [evidence.txt]", "    result: result.md")
+        write_fixture(tmp, status="in_progress", unit_extra=extras)
+        write_text(os.path.join(tmp, "evidence.txt"), "evidence\n")
+        write_text(os.path.join(tmp, "result.md"), "# result\n")
+        r, err = run_prog("gate", tmp, "--unit", "U-1")
+        if err:
+            return False, "program.py 调用异常: %s" % err
+        if r.returncode != 0:
+            return False, "gate rc=%d（应 0）stdout=%r stderr=%r" % (r.returncode, r.stdout, r.stderr)
+        if r.stdout != "U-1: in_progress -> complete (gate PASS)\n":
+            return False, "stdout 非逐字基线: %r" % r.stdout
+        want_yaml = fixture_yaml(status="complete", unit_extra=extras)
+        got_yaml = read_text(os.path.join(tmp, "prog.yaml"))
+        if got_yaml != want_yaml:
+            return False, "prog.yaml 非逐字基线: %r（应 %r）" % (got_yaml, want_yaml)
+        lp = os.path.join(tmp, ".campaign", "program", "ac-91-fixture-ledger.jsonl")
+        if not os.path.isfile(lp):
+            return False, "ledger 未生成: %s" % lp
+        seq = []
+        for ln in read_text(lp).splitlines():
+            rec = json.loads(ln)
+            seq.append((rec.get("event"), rec.get("unit"), rec.get("detail")))
+        if seq != [("gate", "U-1", "PASS"), ("unit_end", "U-1", None)]:
+            return False, "ledger 事件序列非基线: %r" % (seq,)
+    return True, "无 lint_cmd gate：stdout/prog.yaml/ledger 事件序列逐字节钉住"
+
+
 def main():
     results = []
     results.append(("1",) + check1())
@@ -235,12 +317,14 @@ def main():
     results.append(("4",) + check4())
     results.append(("5",) + check5())
     results.append(("6",) + check6())
+    results.append(("7",) + check7())
+    results.append(("8",) + check8())
 
     passed = sum(1 for _, ok, _ in results if ok)
     if passed == len(results):
-        print("PASS ac-91 brief-conventions acceptance (%d/6 states)" % passed)
+        print("PASS ac-91 brief-conventions acceptance (%d/8 states)" % passed)
     else:
-        print("FAIL ac-91 brief-conventions acceptance (%d/6 states)" % passed)
+        print("FAIL ac-91 brief-conventions acceptance (%d/8 states)" % passed)
     for n, ok, desc in results:
         print("%s %s %s" % ("ok" if ok else "BAD", n, desc))
     sys.exit(0 if passed == len(results) else 1)
