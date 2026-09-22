@@ -14,11 +14,27 @@ metadata:
 
 ## 输入
 
-- `.campaign/program/<name>.yaml`：程序定义（DAG），schema 见契约 K19。
+- `.campaign/program/<name>.yaml`：程序定义（DAG），schema（K19）：
+  - meta 顶级键：`program` / `context` / `created` / `reconcile_every` /
+    `last_reconciled`；可选 `conventions:` = 约定文件路径覆盖（缺省
+    `CONVENTIONS.md`，工程根）；可选 `lint_cmd:` = gate 复跑的 lint
+    命令行（缺席、空值或 `-` = 不跑）。
+  - unit 键：`id` / `title` / `status`（pending/in_progress/complete/blocked）/
+    `depends` `gate`（inline list）/ `parallel`（v1 恒 `-`）/ `brief` /
+    `result` / `plan` / `budget_s`。
+  - parser 限制（program.py 迷你 YAML 子集）：键名仅 [A-Za-z_]；
+    不支持注释行；inline list 仅 `depends`/`gate` 两键。
 - 首次创建 `.campaign/` 时：项目根存在 `.git` 目录且 `.gitignore` 无 `.campaign/` 行 → 追加一行 `.campaign/`；无 `.git` → 跳过并输出一行说明（程序状态与证据不入 git）。
 - 工具：`campaign/tools/program.py`（状态机，九子命令 + impact）、
   `campaign/tools/ledger.py`（wave 账本）、`campaign/tools/doc_graph.py`（SRS 定位）、
   `campaign/tools/spec_impact.py`（B6 反向互查）。
+
+约定通道（何时裁定 / 写什么）：
+- 制宪时刻：首个编码单元启动前，由该单元产出 CONVENTIONS.md 并经用户
+  裁定；模板 = campaign/conventions/engineering-conventions-template.md。
+- 里程碑边界：新语言/新框架入场 → 补生态层裁定（lint 配置入库 + lint_cmd）。
+- 首次复触：单元首次改动他单元产出的包 → 对应组件边界行进「组件边界」节。
+- 并行启动：parallel 放开前 → 组件边界与数据所有权先就位。
 
 ## F1 编排循环（七步，逐步机械动作）
 
@@ -27,7 +43,7 @@ LOOP：
  1. 读状态      program.py status --program <p>     （不读会话记忆，D1）
  2. 选单元      program.py next --program <p>       （eligible = pending ∧ 依赖全 complete；v1 串行取最小 ID）
  3. 装配        program.py brief --program <p> --unit <id>
-                → 输入包 <id>-brief.md（K21 六节），即 caliber 阶段 1 的 CONTEXT
+                → 输入包 <id>-brief.md（K21 七节），即 caliber 阶段 1 的 CONTEXT
  4. 调 caliber  program.py start --program <p> --unit <id>（落 unit_start）
                 按单元形态执行完整 caliber 运行：
                 - 判断/集成单元 = ML/L 级（plan-forge 制坯 + 工序 4 彩排 → 执行 → 验证）
@@ -47,10 +63,18 @@ ruling 入账时必到对账点（reconcile-check 判定式承载）。
 
 ## 接口包契约（K21）
 
-**输入包** `<id>-brief.md`（program → caliber，≤ 60 行，固定节序）：
-`# Unit Brief` → `## 单元目标` → `## SRS 锚点`（FR/NFR/C/Q/AC ID + doc_graph
-定位 file:line）→ `## 前序接口产物`（depends 单元 result 指针）→
-`## Global Constraints 候选` → `## 验收锚`（关联 AC，无则「无」）。
+**输入包** `<id>-brief.md`（program → caliber，骨架 ≤60 行 + 工程约定节
+≤28 行，总预算 90 行——超线 stdout WARN 不硬失败，固定七节序）：
+`# Unit Brief` → 派生声明注释行（brief 是纯派生工件，禁手改——改内容
+请改源 program.yaml / 约定文件）→ `## 单元目标` → `## SRS 锚点`
+（FR/NFR/C/Q/AC ID + doc_graph 定位 file:line）→ `## 前序接口产物`
+（depends 单元 result 指针）→ `## Global Constraints 候选`（D1–D4
+编排纪律）→ `## 工程约定`（约定文件全文注入；缺席 = 占位行；超 25
+内容行截断 + 截断标记 + WARN）→ `## 验收锚`（关联 AC + 固定行
+「约束符合：产物不得违反『工程约定』节任一条目」+ meta 有 lint_cmd
+时追加「可执行检查」行）。
+约定文件自身 ≤30 行硬顶（cap 是防膨胀免疫系统）；制宪时点见输入节
+约定通道段。
 
 **输出包** `<id>-result.md`（caliber → program，≤ 15 行，C4 契约程序级版本），
 固定五行：
@@ -62,6 +86,10 @@ verdict: pass|fail|concerns
 实测: <预测 vs 实际，可空>
 ruling: <新增 ruling 清单，可空>
 ```
+
+收账时约定回流（M6）：result 的 `ruling:` 行含工程约定条款 → 编排者把
+该条款追加进 CONVENTIONS.md（此后所有 brief 自动携带）；制宪时把禁则
+清单镜像进工程 `CONTEXT.md` 铁律段（该工程订阅 docs 治理体系时）。
 
 ## 停止点（F5，少而重）
 
@@ -83,6 +111,9 @@ INPUTS: ① 原始 CONTEXT = <program.yaml 的 context 字段所指文件/节>�
 ② 当前全部产物 = <已 complete 单元的 result 文件清单 + 关键工件路径>。
 任务：对照 ①②，回答：产物是否仍服务于原始目标？
 输出二选一：「无漂移」+ 一句依据；或「漂移清单」= | 漂移点 | 证据 | 建议处置 |。
+附查（有界）：上次对账以来 complete 的单元的产物之间，是否存在互斥的
+实现约定（命名/分层/错误处理范式两两矛盾）？只报互斥级矛盾，不报品味、
+不评质量；每条引用 文件:行。
 Rules: read-only；只报目标级漂移（不是质量问题）；每条引用原文。
 ```
 
