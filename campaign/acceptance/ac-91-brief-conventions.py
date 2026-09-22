@@ -98,9 +98,12 @@ def brief_text(tmp):
 
 
 def _read_brief(tmp, r, err):
-    """读 brief 落盘文本；r/err 来自 run_prog。返回 (ok, 文本|诊断)。"""
+    """读 brief 落盘文本；r/err 来自 run_prog。含 rc=0 契约断言（态 1–3 共用）。返回 (ok, 文本|诊断)。"""
     if err:
         return False, "program.py 调用异常: %s" % err
+    if r.returncode != 0:
+        return False, "brief rc=%d（应 0）stdout=%r stderr=%r" % (
+            r.returncode, r.stdout, r.stderr)
     bp = brief_text(tmp)
     if not os.path.isfile(bp):
         return False, "brief 未写出 %s (rc=%d stdout=%r stderr=%r)" % (
@@ -130,7 +133,7 @@ def check1():
                 return False, "brief 缺子串 %r" % s
         if "可执行检查" in text:
             return False, "无 lint_cmd 却含「可执行检查」"
-    return True, "约定注入 + 派生声明 + D1-D4 + 无可执行检查 全过"
+    return True, "约定注入 + 派生声明 + D1 事实源锚 + 无可执行检查 全过"
 
 
 def check2():
