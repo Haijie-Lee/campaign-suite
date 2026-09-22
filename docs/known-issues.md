@@ -64,6 +64,41 @@
 - **处置方向**：升级为 `git status --porcelain -- <paths>` 或 diff-HEAD + `git ls-files --others --exclude-standard` 双段。
 - **状态**：open。重访触发 = ac-90 下次修订 / 下一波 acceptance 整理窗（与 run_all docstring 事项同窗）/ 任何把 ac-90 启用为合并闸的流程上线前。
 
+## KI-10 plan 文本「声明新建实已存在」类事实偏差无下游护栏
+
+- **现象**：`docs/plans/2026-09-22-campaign-conventions-channel-plan.md` T1 注记「conventions/ 为新目录」，实际该目录在 BASE 已有 result-file-contract.md/result-template.md 两个 tracked 文件（彩排补写引入的事实错误）。本例产物路径正确、零实害，但同类偏差若落在路径/文件名上即有实害。
+- **来源**：plan 锁定文本（计划强制，2026-09-22 终审评估 T1① 裁定入册不升档——plan 系未跟踪历史工件、无下游消费者，修文本不改变任何产物）。
+- **处置方向**：plan 锻造/彩排工序对「新建目录/文件」类断言加一条实证核对（写 plan 前 `ls` 目标路径）；本 plan 文本不回改。
+- **状态**：open。重访触发 = 该 plan 文本被复用/引用，或 plan 锻造再产出同类「声明新建实已存在」事实偏差时。
+
+## KI-11 program.py 读文件未用 with（两处同形）
+
+- **现象**：`campaign/tools/program.py` cmd_brief 读约定文件 `open(cpath)` 未 with 包裹（约 :275），与既有 :262 `json.load(open(gpath))` 同形；一次性 CLI 进程靠 CPython 引用回收关句柄，无泄漏实害，但与资源管理最佳实践不符。
+- **来源**：plan 锁定代码逐字 + 仓内既有风格（计划强制，2026-09-22 终审评估 T2② 裁定入册不升档——修 = 偏离锁定代码且与仓内同形风格冲突）。
+- **处置方向**：program.py 下次实质重构时两处一并 with 化；若仓库引入资源管理强制 lint 约定则提前处理。
+- **状态**：open。重访触发 = program.py 下次实质重构，或仓库引入 open()/资源泄漏强制 lint 约定时（连同 :262 gpath 同形一并包裹）。
+
+## KI-12 conventions 路径解析两处重复未提取 helper
+
+- **现象**：program.py K6 行与 K1/K3 行各写一遍 `str(prog.meta.get("conventions") or "CONVENTIONS.md")`（约 :202 与 :273，逐字节相同）；今日无漂移，未来单侧编辑可静默分叉。
+- **来源**：执行引入（2026-09-22 终审评估 T3① 裁定入册不升档——两处低于自设 DRY 阈值，T3 review「第三处出现才提取 helper」裁定在案）。
+- **处置方向**：第三处出现时提取模块级 `_conv_path(prog)` helper（形态参照既有 `_lint_cmd`）。
+- **状态**：open。重访触发 = program.py 出现第三处 conventions 路径解析（或新增约定文件消费者）时。
+
+## KI-13 未配置 lint_cmd 的 gate 逐字节一致无 ac-91 回归态守护
+
+- **现象**：ac-91 六态覆盖 cmd_brief 三态 + gate 通过/失败 + validate WARN，但「未配置 lint_cmd 的程序 gate 输出与改造前逐字节一致」这一 opt-in 约束的 gate 半侧无永久回归态（仅 T3 实现期手工验证一次留痕，validate 半侧有态 6）。
+- **来源**：plan 锁定六态结构（计划强制，2026-09-22 终审评估 T4② 裁定入册不升档——加第 7 态 = 偏离绑定权威）。
+- **处置方向**：ac-91 获 plan 级修订授权重开态结构时补第 7 态（同态 2 fixture、无 lint_cmd 跑 gate，断言 stdout/ledger 与基线逐字节一致）。
+- **状态**：open。重访触发 = program.py cmd_gate（或 gate 账本路径）行为下次被触碰，或 ac-91 获 plan 级修订授权时。注意：本触发不因消息/rc 级修整（如 2026-09-22 final fix）而点火。
+
+## KI-14 ingest-forge SKILL.md 判别指引行 `。；` 标点瑕疵
+
+- **现象**：`campaign/skills/ingest-forge/SKILL.md` 判别指引行末为 `…待决项 → DECISIONS.md。；编码/架构约定类内容…`——句号后接全角分号，纯排版瑕疵无语义危害。
+- **来源**：plan 锁定追加句以 `；` 起首贴上既有行尾 `。` 的直接结果（计划强制，2026-09-22 终审评估 T6① 裁定入册不升档——修 = 偏离绑定权威）。
+- **处置方向**：下次该行因他因编辑或该 skill 升版时顺手收敛为单标点。
+- **状态**：open。重访触发 = ingest-forge SKILL.md 判别指引行下次因他因编辑，或该 skill 升版时。
+
 ## 附：工具层已登记毛刺（不重复立案）
 
 - doc_graph 组 ID 叙事性加粗误报 duplicates 假阳性（fixture 实测 FR-8/9/10 三例，词法 v1.2 候选修法已登记）——见 `campaign/tools/doc_graph.md` 已知限制节。
