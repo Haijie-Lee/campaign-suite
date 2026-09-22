@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 from datetime import datetime
 
@@ -151,6 +152,14 @@ def ledger_load(path):
     return out
 
 
+def _lint_cmd(prog):
+    """lint_cmd 配置串；未配置/空值/'-' → None。"""
+    lc = prog.meta.get("lint_cmd")
+    if lc is None or str(lc).strip() == "" or lc == "-":
+        return None
+    return str(lc)
+
+
 def lint(prog):
     """返回 (errors, warns)。"""
     errs, warns = [], []
@@ -189,6 +198,10 @@ def lint(prog):
     for i in ids:
         if color[i] == WHITE:
             dfs(i, [])
+    # K6：约定文件缺席 且 未配置 lint_cmd → 机械覆盖缺失 WARN（M2）
+    cpath = str(prog.meta.get("conventions") or "CONVENTIONS.md")
+    if not os.path.exists(cpath) and _lint_cmd(prog) is None:
+        warns.append("程序零工程约定机械覆盖——风格约束仅靠 agent 自律（约定文件 %s 缺席且无 lint_cmd）" % cpath)
     return errs, warns
 
 
@@ -289,8 +302,8 @@ def cmd_brief(args):
     acs = [i for i in ids if i.startswith("AC-")]
     lines.append("、".join(acs) if acs else "无")
     lines.append("- 约束符合：产物不得违反「工程约定」节任一条目（审查时逐条引用核对）。")
-    lc = prog.meta.get("lint_cmd")
-    if lc is not None and lc != "-":
+    lc = _lint_cmd(prog)
+    if lc is not None:
         lines.append("- 可执行检查：`%s` 须零告警通过（gate 复跑，失败即 MISSING）。" % lc)
     out = str(u.get("brief") or os.path.join(".campaign", "program", "%s-brief.md" % u["id"]))
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
@@ -336,6 +349,19 @@ def cmd_gate(args):
     if not res or not os.path.exists(res):
         missing.append("result:%s" % (res or "(unset)"))
     lp = ledger_path(args, prog)
+    # K7：lint_cmd 门（M4）——基本 missing 为空且配置了 lint_cmd 才执行
+    lc = _lint_cmd(prog)
+    if lc is not None and not missing:
+        try:
+            r = subprocess.run(lc, shell=True, capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", timeout=300)
+        except subprocess.TimeoutExpired as e:
+            tail = ((e.stdout or "") + (e.stderr or ""))[-500:]
+            missing.append("lint_cmd 失败(rc=timeout>300s): %s" % tail)
+        else:
+            if r.returncode != 0:
+                tail = ((r.stdout or "") + (r.stderr or ""))[-500:]
+                missing.append("lint_cmd 失败(rc=%d): %s" % (r.returncode, tail))
     if missing:
         ledger_append(lp, "gate", unit=u["id"], detail="MISSING: %s" % "; ".join(missing))
         print("MISSING: %s" % "; ".join(missing))
