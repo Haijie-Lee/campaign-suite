@@ -35,7 +35,7 @@ metadata:
 
 - **输入**：源文档 `##` 级节清单 + 第一步画像。
 - **动作**：对每个 `##` 级节判定目标工件。**每 `##` 节恰一行**；子节归属并入所属节行的理由列。目标工件枚举（工件区七类）：`SRS.md / architecture.md / adr/ / research/ / plan.md / risks.md / DECISIONS.md`。
-  判别指引：需求与术语 → SRS.md；选型论证/架构/详细设计 → architecture.md；已确认的决策（含推翻链）→ adr/（只增）；实测数据/调研证据 → research/（dated 不可变）；里程碑计划 → plan.md；风险登记 → risks.md；待决项 → DECISIONS.md。
+  判别指引：需求与术语 → SRS.md；选型论证/架构/详细设计 → architecture.md；已确认的决策（含推翻链）→ adr/（只增）；实测数据/调研证据 → research/（dated 不可变）；里程碑计划 → plan.md；风险登记 → risks.md；待决项 → DECISIONS.md。；编码/架构约定类内容（命名/注释/分层规范）→ 指向工程根 CONVENTIONS.md（约定通道见 program-forge 输入节；文件不存在则登记为程序初始化期待办，不代写）
 - **产出**：`.campaign/ingest/<slug>/mapping.md`（模板 `templates/mapping-template.md`，表头逐字：`| 源节 | 节标题 | 目标工件 | 置信度(高/中/低) | 理由 |`）。**判定是 agent 的判断，不机械代劳；低置信度行 = 第三步 Q 表的候选。**
 
 ## 第三步：模糊点对齐（核心停点）
