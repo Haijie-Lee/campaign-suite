@@ -256,7 +256,17 @@ def cmd_brief(args):
         except Exception:
             pass
     deps = u.get("depends", [])
-    lines = ["# Unit Brief: %s %s" % (u["id"], u.get("title", "")), "",
+    # 工程约定注入（K1/K3）：cpath = meta conventions 或缺省 CONVENTIONS.md（cwd 相对）
+    cpath = str(prog.meta.get("conventions") or "CONVENTIONS.md")
+    if os.path.exists(cpath):
+        conv_lines = open(cpath, encoding="utf-8").read().splitlines()
+        if len(conv_lines) > 25:
+            print("WARN: %s 超 25 行，已按 brief 注入上限截断" % cpath)
+            conv_lines = conv_lines[:25] + ["…（约定文件超预算截断，全文见 %s）" % cpath]
+    else:
+        conv_lines = ["（未配置：%s 缺席）" % cpath]
+    lines = ["# Unit Brief: %s %s" % (u["id"], u.get("title", "")),
+             "<!-- 派生文件：program.py brief 重装配时整体重写；改内容请改源（program.yaml / %s），勿手改本文件 -->" % cpath, "",
              "## 单元目标", "", str(u.get("title", "")), "", "## SRS 锚点", ""]
     if ids:
         for i in ids:
@@ -273,11 +283,19 @@ def cmd_brief(args):
     lines += ["", "## Global Constraints 候选", "",
               "- D1 事实源：状态只认落盘文件", "- D2 不实现：程序层只编排",
               "- D3 门：证据齐才迁移", "- D4 不稀释：不折叠 caliber 停止点",
-              "", "## 验收锚", ""]
+              "", "## 工程约定", ""]
+    lines += conv_lines
+    lines += ["", "## 验收锚", ""]
     acs = [i for i in ids if i.startswith("AC-")]
     lines.append("、".join(acs) if acs else "无")
+    lines.append("- 约束符合：产物不得违反「工程约定」节任一条目（审查时逐条引用核对）。")
+    lc = prog.meta.get("lint_cmd")
+    if lc is not None and lc != "-":
+        lines.append("- 可执行检查：`%s` 须零告警通过（gate 复跑，失败即 MISSING）。" % lc)
     out = str(u.get("brief") or os.path.join(".campaign", "program", "%s-brief.md" % u["id"]))
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
+    if len(lines) > 90:
+        print("WARN: brief %d 行超预算 90（不阻断；瘦身顺序：先瘦约定文件）" % len(lines))
     with open(out, "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(lines) + "\n")
     print(out)
