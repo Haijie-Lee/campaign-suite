@@ -2,7 +2,7 @@
 name: trans-forge
 description: "Use when transforming a mature plan/solution document (现状论证+路线裁定+蓝图+里程碑+风险登记，含已裁定决策注册表) into an ingestible SRS-with-architecture deliverable (需求规格与技术架构方案). Not for ingesting non-conformant existing documents (use ingest-forge); not for producing an SRS zero-to-one or revising an ingested workspace (use spec-forge)."
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   source: campaign-w6
 ---
 
