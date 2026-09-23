@@ -6,7 +6,7 @@
   1. campaign/skills/campaign/SKILL.md 存在且行数 <= 100。
   2. frontmatter 触发面契约：name/version/metadata/description 六子串。
   3. 只出不进 + 顺序仲裁 + 骨架完备（KI-02/KI-03 + 三段式）。
-  4. 三处 JSON version=0.4.0 + marketplace 双份逐字节同形 + description 就位。
+  4. 三处 JSON version=0.5.0 + marketplace 双份逐字节同形 + description 就位。
   5. hooks/spec-context.sh 的 case 模式行零改动（该行不含 campaign）。
   6. forge/tools 零触碰守卫：① campaign-suite 守卫路径 diff 为空；
      ② caliber-suite 插件本体 caliber/ diff 为空（非 git 仓库 → 恒 SKIP 属预期）。
@@ -81,7 +81,7 @@ def check1():
 
 
 def check2():
-    """触发面契约：frontmatter 含 name/version/0.1.0/campaign-w5，description 含六子串。"""
+    """触发面契约：frontmatter 含 name/version/0.2.0/campaign-w6，description 含六子串。"""
     if not os.path.isfile(SKILL_PATH):
         return False, "SKILL.md 不存在: %s" % SKILL_PATH
     fm, _ = split_frontmatter(read_text(SKILL_PATH))
@@ -90,7 +90,7 @@ def check2():
     if "name: campaign" not in fm:
         return False, "frontmatter 缺「name: campaign」"
     md = _metadata_block(fm)
-    for s in ("version:", "0.1.0", "campaign-w5"):
+    for s in ("version:", "0.2.0", "campaign-w6"):
         if s not in md:
             return False, "metadata 块缺子串 %r" % s
     desc_line = next((ln for ln in fm.split("\n")
@@ -110,7 +110,9 @@ _ONCE = [
     "域判定 <域名>，理由：", "此后不再判",
     "非 campaign 域，且 caliber 缺席", "分诊，不治病",
     "AGENTS.md 全局路由规则的信号清单以本 skill 的 description 为权威。",
-    "| ingest-forge | 收编：", "| spec-forge | 生产：", "| program-forge | 编排：",
+    "| ingest-forge | 收编：", "| trans-forge | 转化：", "| spec-forge | 生产：", "| program-forge | 编排：",
+    "按序过五条分支", "3. trans 域", "产出新文档 vs 收编本文档不改写",
+    "收编区外单篇 plan 驱动 vs 工件区内生产/修订", "不单独定域",
 ]
 _AT_LEAST = ["✓ 全配", "⚠ 缺", "歧义即停"]
 
@@ -127,9 +129,9 @@ def check3():
     c = body.count("不与 caliber 往返仲裁")
     if c != 1:
         return False, "「不与 caliber 往返仲裁」出现 %d 次（应恰 1）" % c
-    order = re.findall(r"^[0-9]+\. (program|ingest|spec) 域", body, re.M)
-    if order != ["program", "ingest", "spec"]:
-        return False, "域顺序行 = %r（应 ['program', 'ingest', 'spec']）" % order
+    order = re.findall(r"^[0-9]+\. (program|ingest|trans|spec) 域", body, re.M)
+    if order != ["program", "ingest", "trans", "spec"]:
+        return False, "域顺序行 = %r（应 ['program', 'ingest', 'trans', 'spec']）" % order
     for s in _ONCE:
         c = body.count(s)
         if c != 1:
@@ -157,8 +159,8 @@ def check4():
             return False, "%s 缺失: %s" % (label, path)
         with open(path, "r", encoding="utf-8") as f:
             v = _version_of(json.load(f))
-        if v != "0.4.0":
-            return False, "%s version=%r（应 0.4.0）" % (label, v)
+        if v != "0.5.0":
+            return False, "%s version=%r（应 0.5.0）" % (label, v)
     if not filecmp.cmp(MARKETPLACE_JSON, CLAUDE_MARKETPLACE_JSON, shallow=False):
         return False, "marketplace 双份逐字节不一致"
     pj = read_text(PLUGIN_JSON)
@@ -168,7 +170,7 @@ def check4():
         return False, "plugin.json 含旧串「ingest-forge/spec-forge/evidence-auditor」"
     if "总入口（域判定→路由）" not in read_text(MARKETPLACE_JSON):
         return False, "marketplace.json 缺子串「总入口（域判定→路由）」"
-    return True, "三处 version=0.4.0 + 双份同形 + description 就位"
+    return True, "三处 version=0.5.0 + 双份同形 + description 就位"
 
 
 def check5():
@@ -176,9 +178,9 @@ def check5():
     if not os.path.isfile(SPEC_CONTEXT_SH):
         return False, "spec-context.sh 不存在: %s" % SPEC_CONTEXT_SH
     hits = [ln for ln in read_text(SPEC_CONTEXT_SH).split("\n")
-            if "plan-forge|spec-forge|ingest-forge|program-forge" in ln]
+            if "plan-forge|spec-forge|ingest-forge|trans-forge|program-forge" in ln]
     if not hits:
-        return False, "spec-context.sh 缺 case 模式行（plan-forge|spec-forge|ingest-forge|program-forge）"
+        return False, "spec-context.sh 缺 case 模式行（plan-forge|spec-forge|ingest-forge|trans-forge|program-forge）"
     if any("campaign" in ln for ln in hits):
         return False, "case 模式行含 campaign: %r" % hits
     return True, "spec-context.sh case 模式行在且不含 campaign"
