@@ -5,7 +5,7 @@
 ## 行为
 
 1. stdin 取 `tool_input.skill`，剥插件前缀 `${SKILL##*:}`（全限定名调用同样命中）。
-2. skill ∈ {`plan-forge`, `spec-forge`, `ingest-forge`, `program-forge`} 才继续，否则静默。
+2. skill ∈ {`plan-forge`, `spec-forge`, `ingest-forge`, `trans-forge`, `program-forge`} 才继续，否则静默。
 3. **激活判据（K7）**：工程根存在 `adr/` 或 `docs/spec/` 或 `.campaign/` 任一，且 `.campaign/graph/graph.json` 存在——否则静默。
 4. **注入图摘要**（信封 `{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":...}}`，`ensure_ascii=False`），摘要逐字三行：
 

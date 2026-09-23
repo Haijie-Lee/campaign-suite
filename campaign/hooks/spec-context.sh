@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # campaign 插件 PreToolUse(Skill) hook：spec 图摘要注入（campaign-suite W2）
 # 契约 K0/K7（镜像 caliber index-md.sh）：skill ∈ {plan-forge, spec-forge,
-# ingest-forge, program-forge} 且工程激活（adr/ 或 docs/spec/ 或 .campaign/）
+# ingest-forge, trans-forge, program-forge} 且工程激活（adr/ 或 docs/spec/ 或 .campaign/）
 # 且 .campaign/graph/graph.json 存在 → 注入图摘要三行。exit 恒 0；异常静默。
 INPUT=$(cat)
 PY=$(command -v python 2>/dev/null || command -v python3 2>/dev/null || true)
@@ -17,7 +17,7 @@ print(ti.get("skill","") if isinstance(ti,dict) else "")
 ' 2>/dev/null)
 SKILL="${SKILL##*:}"  # 剥插件前缀（镜像 index-md.sh：caliber:plan-forge→plan-forge）
 case "$SKILL" in
-  plan-forge|spec-forge|ingest-forge|program-forge) ;;
+  plan-forge|spec-forge|ingest-forge|trans-forge|program-forge) ;;
   *) exit 0 ;;
 esac
 PROJ="${ZCODE_PROJECT_DIR:-${CLAUDE_PROJECT_DIR:-$PWD}}"
