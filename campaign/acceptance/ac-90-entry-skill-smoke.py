@@ -139,7 +139,7 @@ def check3():
     for s in _AT_LEAST:
         if body.count(s) < 1:
             return False, "正文缺「%s」" % s
-    return True, "只出不进 + program→ingest→spec 顺序 + 骨架闸全过"
+    return True, "只出不进 + program→ingest→trans→spec 顺序 + 骨架闸全过"
 
 
 def _version_of(obj):
