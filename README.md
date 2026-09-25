@@ -1,8 +1,8 @@
 # campaign-suite
 
-> 最后更新：2026-09-22 ｜ 平台形态出处：`caliber-suite`（同机已验证的本地目录 marketplace 模式）
+> 最后更新：2026-09-25 ｜ 平台形态出处：`caliber-suite`（同机已验证的本地目录 marketplace 模式）
 
-ZCode **本地目录 marketplace**（名 `campaign-suite`），当前只含一个插件 **campaign v0.5.0**：超大规模开发任务的编排套件，layered on caliber——总入口 skill campaign + 四个 forge skills（ingest-forge / trans-forge / spec-forge / program-forge）+ 一个证据审计 agent（evidence-auditor）+ 四个 spec 守护 hook + 五个零第三方依赖契约工具，经本地 marketplace 一次安装、随插件自动加载。
+ZCode **本地目录 marketplace**（名 `campaign-suite`），当前只含一个插件 **campaign v0.5.1**：超大规模开发任务的编排套件，layered on caliber——总入口 skill campaign + 四个 forge skills（ingest-forge / trans-forge / spec-forge / program-forge）+ 一个证据审计 agent（evidence-auditor）+ 四个 spec 守护 hook + 五个零第三方依赖契约工具，经本地 marketplace 一次安装、随插件自动加载。
 
 ## 核心定位
 
@@ -23,7 +23,7 @@ ZCode **本地目录 marketplace**（名 `campaign-suite`），当前只含一�
 | `trans-forge` | skill | 转化锻造：成熟方案文档（plan）→ 可收编规格文档（需求规格与技术架构方案），五工序 + 三停点 + 出口三证 |
 | `program-forge` | skill | 编排循环执行体：读 DAG → 派单元 → 收账 → 过门 → 对账 |
 | `evidence-auditor` | agent | 证据口径审计专责：定量断言的来源/日期/测量条件/口径四要素核对 |
-| hook `handoff-inject.sh` | SessionStart（matcher `startup\|compact`） | 注入 `.campaign/handoff.md` 生存包——跨会话/压缩不失忆 |
+| hook `handoff-inject.sh` | SessionStart（matcher `startup\|compact`） | 注入 `.campaign/handoff.md` 与 `.campaign/program/*-resume-note.md` 生存包——跨会话/压缩不失忆 |
 | hook `spec-context.sh` | PreToolUse（matcher `Skill`） | 调 skill 前注入 spec 图摘要 |
 | hook `spec-lint.sh` | PostToolUse（matcher `Write\|Edit`） | spec 棘轮 lint：写文档时守护契约 |
 | hook `spec-wrapup.sh` | Stop（无 matcher） | 会话收尾提醒（spec 收尾检查单） |
@@ -46,7 +46,7 @@ campaign-suite/
 │   └── marketplace.json        # ZCode 实际读取的 manifest
 ├── campaign/                   # 插件目录（marketplace.json 的 plugins[0].source: "./campaign"）
 │   ├── .zcode-plugin/
-│   │   └── plugin.json         # {"name":"campaign","version":"0.5.0"}
+│   │   └── plugin.json         # {"name":"campaign","version":"0.5.1"}
 │   ├── skills/
 │   │   ├── campaign/           # SKILL.md（总入口：域判定→路由→守停止点）
 │   │   ├── ingest-forge/       # SKILL.md + templates/（映射表、Q 表模板）

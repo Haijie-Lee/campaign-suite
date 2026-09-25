@@ -2,7 +2,7 @@
 name: program-forge
 description: 编排多单元程序（读 DAG → 派单元 → 收账 → 过门 → 对账）。当任务被分解为 program.yaml 中的多个有依赖关系的单元、需要跨 plan/跨会话编排时使用。不用于：单 plan 任务（caliber 直跑）、SRS 生产（spec-forge）、文档收编（ingest-forge）。
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   source: campaign-w4
 ---
 
@@ -27,6 +27,7 @@ metadata:
     `result` / `plan` / `budget_s`。
   - parser 限制（program.py 迷你 YAML 子集）：键名仅 [A-Za-z_]；
     不支持注释行；inline list 仅 `depends`/`gate` 两键。
+- `.campaign/program/<name>-resume-note.md`：程序级续跑生存包（K22，约定见下）。
 - 首次创建 `.campaign/` 时：项目根存在 `.git` 目录且 `.gitignore` 无 `.campaign/` 行 → 追加一行 `.campaign/`；无 `.git` → 跳过并输出一行说明（程序状态与证据不入 git）。
 - 工具：`campaign/tools/program.py`（状态机，九子命令 + impact）、
   `campaign/tools/ledger.py`（wave 账本）、`campaign/tools/doc_graph.py`（SRS 定位）、
@@ -63,6 +64,7 @@ LOOP：
 
 任何一步失败 = 停止或回退到上一步，禁止跳过。每 5 单元或 plan 修订类
 ruling 入账时必到对账点（reconcile-check 判定式承载）。
+单元边界（gate 后）与停止点 = resume note 更新点（K22）。
 
 ## 接口包契约（K21）
 
@@ -93,6 +95,24 @@ ruling: <新增 ruling 清单，可空>
 收账时约定回流（M6）：result 的 `ruling:` 行含工程约定条款 → 编排者把
 该条款追加进 CONVENTIONS.md（此后所有 brief 自动携带）；制宪时把禁则
 清单镜像进工程 `CONTEXT.md` 铁律段（该工程订阅 docs 治理体系时）。
+
+## 程序级 resume note（K22）
+
+每程序一份 `.campaign/program/<name>-resume-note.md` = 单程序跨 session
+生存包；工程根 `.campaign/handoff.md` 降为跨程序索引 + 工程级坑位
+（环境实测坑/工具教训），其五行骨架（当前单元/已过门/待裁定/下一步/
+ledger）照留，两者分工不互相复制内容。
+实证出处（2026-09-25 AeroFold 双线首轮）：工程根 handoff 停滞 12 单元
+无人更新，而二线自创 `<name>-resume-note.md` 成功支撑跨 session 续跑——
+生存包的天然粒度 = 程序级。
+
+- 更新时机：单元边界（gate 后）、停止点、程序收口；收口时首行写
+  「归档，不再更新」+ 消费指针后停更。
+- 内容五件（宜 ≤40 行）：当前状态指针（program.py status 可复核的摘要 +
+  在途单元/分支）/ 已记账 ruling（重启不丢的裁定）/ 下一步（机械动作序）/
+  已裁定备案（用户指令与默认值）/ 收口归档段。
+- hook 送达：SessionStart 注入工程根 handoff.md 与全部
+  `*-resume-note.md`（归档件同样注入——留档优先于注入体积，体积失控再治）。
 
 ## 停止点（F5，少而重）
 
