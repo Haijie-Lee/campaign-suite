@@ -2,14 +2,14 @@
 name: spec-forge
 description: "Use when producing or revising an SRS (zero-to-one or increment), L-level routed alongside plan-forge. Not for ingesting non-conformant documents (use ingest-forge); not for task implementation plans (use plan-forge)."
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   source: campaign-w3
 ---
 
 # Spec Forge — SRS 选材、制坯、锻打、成型
 
 把「写出一份可验证、单一解释的 SRS（或其增量修订）」固化为四道工序。骨架与
-plan-forge v1.8.0 四工序同构，替换三个配置件（差异替换表见下）。本 skill 是
+plan-forge 四工序同构（机制指针随 caliber 现行版本浮动，禁钉版本号——化石实证 2026-09-26），替换三个配置件（差异替换表见下）。本 skill 是
 **锻造工艺**；对抗审查机制（双声部/三级裁定/收敛循环/准出闸口/彩排派遣形态）
 一律调 caliber 既有机制，正文以指针引用，**不复制实现**（防双份纪律漂移）。
 检查细目在 `checklists.md`——用到哪道工序读哪节，不预读。
