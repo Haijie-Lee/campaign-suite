@@ -35,9 +35,12 @@ RND="$PROJ/.campaign/program"
 HF_WIN=$(cygpath -w "$HF" 2>/dev/null || printf '%s' "$HF")
 RND_WIN=$(cygpath -w "$RND" 2>/dev/null || printf '%s' "$RND")
 
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+TOOLS_WIN=$(cygpath -w "$SCRIPT_DIR/../tools" 2>/dev/null || printf '%s' "$SCRIPT_DIR/../tools")
+
 "$PY" -c "
 import glob,json,os,sys
-hf,rnd=sys.argv[1],sys.argv[2]
+hf,rnd,tools=sys.argv[1],sys.argv[2],sys.argv[3]
 parts=[]; names=[]
 if os.path.isfile(hf):
     try:
@@ -51,9 +54,32 @@ for f in sorted(glob.glob(os.path.join(rnd,'*-resume-note.md'))):
         names.append('.campaign/program/'+os.path.basename(f))
     except Exception:
         pass
+# A2：在途单元 brief 注入（串行 v1：每程序至多 1 个 in_progress）
+sys.path.insert(0, tools)
+try:
+    import program as _prog
+except Exception:
+    _prog = None
+if _prog is not None:
+    for y in sorted(glob.glob(os.path.join(rnd,'*.yaml'))):
+        try:
+            p = _prog.Program(y)
+        except Exception:
+            continue
+        for u in p.units:
+            if u.get('status') != 'in_progress':
+                continue
+            bp = str(u.get('brief') or os.path.join(rnd, u['id']+'-brief.md'))
+            if os.path.isfile(bp):
+                try:
+                    rel = '.campaign/program/'+os.path.basename(bp)
+                    parts.append('--- '+rel+'（在途单元 brief，A2） ---\n'+open(bp,encoding='utf-8').read())
+                    names.append(rel)
+                except Exception:
+                    pass
 if not parts:
     raise SystemExit
 tail='\n\n> 以上来自 '+ '、'.join(names) +'（campaign 生存包）'
 print(json.dumps({'hookSpecificOutput':{'hookEventName':'SessionStart','additionalContext':'\n\n'.join(parts)+tail}},ensure_ascii=False))
-" "$HF_WIN" "$RND_WIN" 2>/dev/null
+" "$HF_WIN" "$RND_WIN" "$TOOLS_WIN" 2>/dev/null
 exit 0

@@ -23,7 +23,7 @@ ZCode **本地目录 marketplace**（名 `campaign-suite`），当前只含一�
 | `trans-forge` | skill | 转化锻造：成熟方案文档（plan）→ 可收编规格文档（需求规格与技术架构方案），五工序 + 三停点 + 出口三证 |
 | `program-forge` | skill | 编排循环执行体：读 DAG → 派单元 → 收账 → 过门 → 对账 |
 | `evidence-auditor` | agent | 证据口径审计专责：定量断言的来源/日期/测量条件/口径四要素核对 |
-| hook `handoff-inject.sh` | SessionStart（matcher `startup\|compact`） | 注入 `.campaign/handoff.md` 与 `.campaign/program/*-resume-note.md` 生存包——跨会话/压缩不失忆 |
+| hook `handoff-inject.sh` | SessionStart（matcher `startup\|compact`） | 注入 `.campaign/handoff.md` 与 `.campaign/program/*-resume-note.md` 生存包——跨会话/压缩不失忆；0.6.0 起兼注在途单元 brief |
 | hook `spec-context.sh` | PreToolUse（matcher `Skill`） | 调 skill 前注入 spec 图摘要 |
 | hook `spec-lint.sh` | PostToolUse（matcher `Write\|Edit`） | spec 棘轮 lint：写文档时守护契约 |
 | hook `spec-wrapup.sh` | Stop（无 matcher） | 会话收尾提醒（spec 收尾检查单） |
