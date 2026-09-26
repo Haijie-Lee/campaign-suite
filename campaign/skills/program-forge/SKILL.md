@@ -2,13 +2,13 @@
 name: program-forge
 description: 编排多单元程序（读 DAG → 派单元 → 收账 → 过门 → 对账）。当任务被分解为 program.yaml 中的多个有依赖关系的单元、需要跨 plan/跨会话编排时使用。不用于：单 plan 任务（caliber 直跑）、SRS 生产（spec-forge）、文档收编（ingest-forge）。
 metadata:
-  version: "0.1.1"
+  version: "0.2.0"
   source: campaign-w4
 ---
 
 # program-forge — 编排循环 F1 的执行体
 
-程序层只编排、永不亲手实现（D2）。编排原子单位 = 一个 caliber L 级运行；
+程序层只编排、永不亲手实现（D2）。编排原子单位 = 一次完整 caliber 运行（声明定级与升级规则见 F1 步 4）；
 里程碑是状态聚合层，不是执行单位。本 skill 把「编排」从主线程的即兴记忆
 劳动变成查表执行的机械劳动 + 停止点处的人工裁定。
 
@@ -22,6 +22,7 @@ metadata:
     CAMPAIGN_UNIT / CAMPAIGN_PROGRAM / CAMPAIGN_WS 三环境变量——
     检查脚本据此定位当前单元、程序文件与工程根；多项检查用 wrapper
     脚本收口）。
+    可选 `fold_grant: srs_frozen` = 方案确认停折叠预授权（见 F1 步 4）；缺省 = 不折叠。
   - unit 键：`id` / `title` / `status`（pending/in_progress/complete/blocked）/
     `depends` `gate`（inline list）/ `parallel`（v1 恒 `-`）/ `brief` /
     `result` / `plan` / `budget_s`。
@@ -47,13 +48,23 @@ LOOP：
  1. 读状态      program.py status --program <p>     （不读会话记忆，D1）
  2. 选单元      program.py next --program <p>       （eligible = pending ∧ 依赖全 complete；v1 串行取最小 ID）
  3. 装配        program.py brief --program <p> --unit <id>
-                → 输入包 <id>-brief.md（K21 七节），即 caliber 阶段 1 的 CONTEXT
+                → 输入包 <id>-brief.md（K21 八节，含编排身份节）
  4. 调 caliber  program.py start --program <p> --unit <id>（落 unit_start）
-                按单元形态执行完整 caliber 运行：
-                - 判断/集成单元 = ML/L 级（plan-forge 制坯 + 工序 4 彩排 → 执行 → 验证）
-                - 修订单元 = plan-review-ritual REVISION 模式（B4）
-                - 文档单元 = 主线程 inline 执行 + 独立审查
-                caliber 的停止点按 D4 原样触发——编排不得替用户回答
+                经 Skill 工具按名调用 caliber，任务输入 = 上一步装配的
+                <id>-brief.md 全文 + 声明定级（程序作者代理人语义，借
+                caliber Step 1「用户一句话改级」通道，caliber 零改动）：
+                - 判断/集成单元 → 声明 ML；修订单元 → 直调 plan-review-ritual
+                  REVISION 模式（B4，不经六阶段）；文档单元 → 声明 S
+                - caliber 按五维复量，只升不降
+                此后单元执行 = 一次完整 caliber 运行（Step 0 起全骨架：依赖
+                验证、定级、路由装配、六阶段），方案挑战者（阶段 1 双轨）、
+                ui-forge 等装备库消费点随 caliber 现行版本自动触发——本
+                skill 不持有管线枚举（枚举即化石，2026-09-26 实证）。
+                方案确认停的折叠：仅当程序 meta 声明 fold_grant 且 caliber
+                原生折叠条件三条件全满足时折叠，逐次记 ledger Ruling——
+                编排层不得自建折叠规则（D4）。
+                完成判定 = <id>-result.md 五行契约落盘（K21），随后回本
+                循环步 5 收账。
  5. 收账        写 <id>-result.md（K21 五行输出包）
                 program.py collect --program <p> --unit <id> --elapsed <秒>
  6. 门检查      program.py gate --program <p> --unit <id>
@@ -69,15 +80,15 @@ ruling 入账时必到对账点（reconcile-check 判定式承载）。
 ## 接口包契约（K21）
 
 **输入包** `<id>-brief.md`（program → caliber，骨架 ≤60 行 + 工程约定节
-≤28 行，总预算 90 行——超线 stdout WARN 不硬失败，固定七节序）：
+≤28 行，总预算 90 行——超线 stdout WARN 不硬失败，固定八节序）：
 `# Unit Brief` → 派生声明注释行（brief 是纯派生工件，禁手改——改内容
-请改源 program.yaml / 约定文件）→ `## 单元目标` → `## SRS 锚点`
+请改源 program.yaml / 约定文件）→ `## 编排身份`（程序名/单元 id/还账契约/门证据清单/生存包指针 + 桥机制义务行——全部由 program.py 机械装配）→ `## 单元目标` → `## SRS 锚点`
 （FR/NFR/C/Q/AC ID + doc_graph 定位 file:line）→ `## 前序接口产物`
 （depends 单元 result 指针）→ `## Global Constraints 候选`（D1–D4
 编排纪律）→ `## 工程约定`（约定文件全文注入；缺席 = 占位行；超 25
 内容行截断 + 截断标记 + WARN）→ `## 验收锚`（关联 AC + 固定行
 `约束符合：产物不得违反「工程约定」节任一条目（审查时逐条引用核对）。`+ meta 有 lint_cmd
-时追加「可执行检查」行）。
+时追加「可执行检查」行）。+ 还账行（产出 result 五行契约）
 约定文件自身 ≤30 行硬顶（cap 是防膨胀免疫系统）；制宪时点见输入节
 约定通道段。
 
@@ -152,3 +163,4 @@ Rules: read-only；只报目标级漂移（不是质量问题）；每条引用�
 - 接口零 caliber 改动：文件约定（brief 进、result 出）。
 - spec 变更时跑 `program.py impact --program <p> --ids <变更 ID 集>`（B6
   反向互查）→ 受影响在途 plan 清单，触发重审或修订。
+- 桥消费：cmd_brief/cmd_gate 读 caliber 仓 campaign-bridge.json（定位序 = CALIBER_PLUGIN_DIR 环境变量 → 插件 cache 最高版本目录），命中信号单元的机制义务行进 brief 编排身份节、gate_artifacts 并入门判据；桥缺席/损坏静默降级不阻断（向后兼容）。
