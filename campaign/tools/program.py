@@ -160,6 +160,66 @@ def _lint_cmd(prog):
     return str(lc)
 
 
+def find_bridge():
+    """桥文件定位序（C3）：CALIBER_PLUGIN_DIR → cache 最高版本 → None。"""
+    env = os.environ.get("CALIBER_PLUGIN_DIR")
+    if env:
+        p = os.path.join(env, "campaign-bridge.json")
+        if os.path.isfile(p):
+            return p
+    import glob as _glob
+    cands = _glob.glob(os.path.join(os.path.expanduser("~"),
+        ".zcode", "cli", "plugins", "cache", "caliber-suite", "caliber",
+        "*", "campaign-bridge.json"))
+    if not cands:
+        return None
+    def _ver(p):
+        name = os.path.basename(os.path.dirname(p))
+        try:
+            return tuple(int(x) for x in name.split("."))
+        except ValueError:
+            return (0,)
+    return sorted(cands, key=_ver, reverse=True)[0]
+
+
+def load_bridge():
+    """读桥文件；缺席 → None（静默）；损坏 → WARN 一行 + None（C4）。"""
+    p = find_bridge()
+    if p is None:
+        return None
+    try:
+        with open(p, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        print("WARN: campaign-bridge.json 解析失败，按无桥降级（%s）" % p)
+        return None
+
+
+def _unit_seed_text(u):
+    """信号匹配的单元文本种：title 原文（brief 在装配中，种子不含它）。"""
+    return str(u.get("title", ""))
+
+
+def bridge_hits(bridge, unit, ws):
+    """命中条目清单：paths 任一存在（ws 相对）AND keywords 任一在种子文本（宁漏勿错）。"""
+    if not bridge:
+        return []
+    out = []
+    for e in bridge.get("entries", []):
+        sig = e.get("signal", {})
+        paths = sig.get("paths", [])
+        kws = sig.get("keywords", [])
+        p_hit = any(os.path.exists(os.path.join(ws, p)) for p in paths) if paths else False
+        k_hit = any(k in _unit_seed_text(unit) for k in kws) if kws else False
+        if p_hit and k_hit:
+            out.append(e)
+    return out
+
+
+def _result_path(u):
+    return str(u.get("result") or "")
+
+
 def lint(prog):
     """返回 (errors, warns)。"""
     errs, warns = [], []
@@ -259,7 +319,8 @@ def cmd_brief(args):
     gpath = os.path.join(".campaign", "graph", "graph.json")
     if os.path.exists(gpath):
         try:
-            g = json.load(open(gpath, encoding="utf-8"))
+            with open(gpath, encoding="utf-8") as f:
+                g = json.load(f)
             nodes = g.get("nodes", [])
             if isinstance(nodes, dict):
                 nodes = list(nodes.values())
@@ -272,15 +333,23 @@ def cmd_brief(args):
     # 工程约定注入（K1/K3）：cpath = meta conventions 或缺省 CONVENTIONS.md（cwd 相对）
     cpath = str(prog.meta.get("conventions") or "CONVENTIONS.md")
     if os.path.exists(cpath):
-        conv_lines = open(cpath, encoding="utf-8").read().splitlines()
+        with open(cpath, encoding="utf-8") as f:
+            conv_lines = f.read().splitlines()
         if len(conv_lines) > 25:
             print("WARN: %s 超 25 行，已按 brief 注入上限截断" % cpath)
             conv_lines = conv_lines[:25] + ["…（约定文件超预算截断，全文见 %s）" % cpath]
     else:
         conv_lines = ["（未配置：%s 缺席）" % cpath]
+    gate_list = [str(g) for g in u.get("gate", [])]
+    res_disp = _result_path(u) or "（unit 未声明 result 键——gate 必红，先补 program.yaml）"
     lines = ["# Unit Brief: %s %s" % (u["id"], u.get("title", "")),
              "<!-- 派生文件：program.py brief 重装配时整体重写；改内容请改源（program.yaml / %s），勿手改本文件 -->" % cpath, "",
-             "## 单元目标", "", str(u.get("title", "")), "", "## SRS 锚点", ""]
+             "## 编排身份", "",
+             "- 你在 campaign 程序 %s 的单元 %s 执行中（unit_start 已落账）。" % (prog.meta.get("program", "?"), u["id"]),
+             "- 完工还账：写 %s 五行（verdict/结论/证据/实测/ruling），落盘即停手——收账与门由编排者执行。" % res_disp,
+             "- 门证据：%s 须存在且非空。" % ("、".join(gate_list) if gate_list else "（本单元 gate 清单为空）"),
+             "- 生存包：.campaign/program/%s-resume-note.md（跨会话与 compact 后回接读它）。" % prog.meta.get("program", "program"),
+             "", "## 单元目标", "", str(u.get("title", "")), "", "## SRS 锚点", ""]
     if ids:
         for i in ids:
             lines.append("- %s%s" % (i, (" — " + loc[i]) if i in loc else ""))
@@ -302,9 +371,15 @@ def cmd_brief(args):
     acs = [i for i in ids if i.startswith("AC-")]
     lines.append("、".join(acs) if acs else "无")
     lines.append("- 约束符合：产物不得违反「工程约定」节任一条目（审查时逐条引用核对）。")
+    if _result_path(u):
+        lines.append("- 还账：产出 %s 五行契约（verdict/结论/证据/实测/ruling）。" % _result_path(u))
     lc = _lint_cmd(prog)
     if lc is not None:
         lines.append("- 可执行检查：`%s` 须零告警通过（gate 复跑，失败即 MISSING）。" % lc)
+    for e in bridge_hits(load_bridge(), u, os.getcwd()):
+        for ob in e.get("brief_obligations", []):
+            idx = lines.index("## 单元目标")
+            lines.insert(idx - 1, "- 机制义务（桥 %s）：%s" % (e.get("skill", "?"), ob))
     out = str(u.get("brief") or os.path.join(".campaign", "program", "%s-brief.md" % u["id"]))
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     if len(lines) > 90:
@@ -345,6 +420,14 @@ def cmd_gate(args):
     for g in u.get("gate", []):
         if not os.path.exists(str(g)) or os.path.getsize(str(g)) == 0:
             missing.append(str(g))
+    _bridge = load_bridge()
+    for e in bridge_hits(_bridge, u, os.getcwd()):
+        import glob as _glob
+        for pat in e.get("gate_artifacts", []):
+            found = [p for p in _glob.glob(pat, recursive=True)
+                     if os.path.isfile(p) and os.path.getsize(p) > 0]
+            if not found:
+                missing.append("bridge:%s" % pat)
     res = str(u.get("result") or "")
     if not res or not os.path.exists(res):
         missing.append("result:%s" % (res or "(unset)"))
