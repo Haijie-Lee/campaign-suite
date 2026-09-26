@@ -13,7 +13,7 @@
   3. spec-context hook：spec-context.sh 含 M7 逐字行
      「plan-forge|spec-forge|ingest-forge|trans-forge|program-forge) ;;」；
      spec-context.md 含「trans-forge」。
-  4. manifests：三 JSON version==0.5.0；两 marketplace 逐字节同形；plugin.json 与
+  4. manifests：三 JSON version 动态一致（两两互等 + X.Y.Z 形态）；两 marketplace 逐字节同形；plugin.json 与
      marketplace.json description 含「trans-forge」。
   5. references 锚：skeleton-aerofold.md 含「高 9 / 中 4 / 低 0」；id-grammar.md 含
      「一处值一 token」；case-flow-builder.md 含「反模式」节标题。
@@ -34,6 +34,7 @@ SKIP 降级计通过。REPO_ROOT 自 __file__ 推（脚本位于 campaign/accept
 import filecmp
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -73,6 +74,7 @@ WAVE_FILES = [
     "campaign/acceptance/ac-90-entry-skill-smoke.py",
     "campaign/acceptance/ac-92-trans-forge.py",
     "docs/plans/2026-09-23-trans-forge-plan.md",
+    "docs/plans/2026-09-26-campaign-caliber-fusion-plan.md",
     "docs/known-issues.md",
 ]
 # 预存基线豁免（wave 前已存在未跟踪件；.caliber/ .campaign/ 已 gitignore 天然豁免）
@@ -146,7 +148,8 @@ def _version_of(obj):
 
 
 def check4():
-    """manifests：三 JSON 0.5.0 + 双 marketplace 同形 + description 含 trans-forge。"""
+    """manifests：三 JSON version 动态一致（两两互等 + X.Y.Z 形态）+ 双 marketplace 同形 + description 含 trans-forge。"""
+    vers = []
     for label, path in (("plugin.json", PLUGIN_JSON),
                         ("marketplace.json", MARKETPLACE_JSON),
                         (".claude-plugin/marketplace.json", CLAUDE_MARKETPLACE_JSON)):
@@ -154,15 +157,18 @@ def check4():
             return False, "%s 缺失: %s" % (label, path)
         with open(path, "r", encoding="utf-8") as f:
             v = _version_of(json.load(f))
-        if v != "0.5.0":
-            return False, "%s version=%r（应 0.5.0）" % (label, v)
+        if v is None or not re.fullmatch(r"\d+\.\d+\.\d+", v):
+            return False, "%s version=%r（形态非 X.Y.Z）" % (label, v)
+        vers.append((label, v))
+    if len(set(v for _, v in vers)) != 1:
+        return False, "三处 version 不一致: %s" % (vers,)
     if not filecmp.cmp(MARKETPLACE_JSON, CLAUDE_MARKETPLACE_JSON, shallow=False):
         return False, "marketplace 双份逐字节不一致"
     if "trans-forge" not in read_text(PLUGIN_JSON):
         return False, "plugin.json description 缺「trans-forge」"
     if "trans-forge" not in read_text(MARKETPLACE_JSON):
         return False, "marketplace.json description 缺「trans-forge」"
-    return True, "三处 0.5.0 + 双 marketplace 同形 + description 含 trans-forge"
+    return True, "三处 version 一致（动态）+ 双 marketplace 同形 + description 含 trans-forge"
 
 
 def check5():
