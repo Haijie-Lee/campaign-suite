@@ -121,7 +121,7 @@
 
 - **现象**：ac-90 check4 / ac-92 check4 以字面值（`v != "0.5.0"`）钉定三 manifest 版本、ac-90 check2 钉 skill 版本字面值 `0.2.0`——验收断言与版本号集互相咬死：每次升版必连带改断言，漏改即红。2026-09-26 融合批升版（campaign 0.5.1→0.6.0、skill 0.2.0→0.3.0）基线实证字面值断言即刻失同步。
 - **来源**：计划强制（ac-90/ac-92 系各波 plan 逐字钉定的验收脚本，版本字面值随当时版本写入）。
-- **处置方向**：check4 动态化——逐处 `re.fullmatch(r"\d+\.\d+\.\d+")` 形态校验 + 三处互等（`len(set(...)) != 1`），断言不再含版本字面值；check2 跟随变量同步。
+- **处置方向**：check4 动态化——逐处 `re.fullmatch(r"\d+\.\d+\.\d+")` 形态校验 + 三处互等（`len(set(...)) != 1`），断言不再含版本字面值；check2 跟随升版同步。ac-90 check2 字面值（`0.3.0`）为同族残留——下次 campaign skill 升版批同款动态化（重访触发）。
 - **状态**：closed（2026-09-26，融合批 T10 已落地）。
 
 ## KI-17 ui-forge campaign gate 消费点声明后零消费（手工接线必败实证）
@@ -130,6 +130,13 @@
 - **来源**：2026-09-26 融合批设计期实证（双轨方案勘探对照中查实消费面为零）。
 - **处置方向**：桥文件机制承接——caliber 仓导出 campaign-bridge.json（T1），program.py gate 机械合并桥判据（T2），消费不再依赖手工接线；本批已落地（ac-93/ac-94 双闸把守）。
 - **状态**：closed（2026-09-26，融合批 T1/T2/T7）。（AeroFold-ui 仓侧 learnings 归 U-M2-08 汇合时消费，不入本批。）
+
+## KI-18 handoff-inject.sh 相对 brief 键按 hook 进程 cwd 解析（静默丢注入）
+
+- **现象**：程序 yaml 声明相对形态 `brief:` 键 + 单元 in_progress + hook 进程 cwd ≠ 工程根时，`os.path.isfile(bp)` 落空且相对键无默认路径回退——compact 后静默丢在途单元 brief 注入（恰是 A2 注入要根除的失忆形态）。实证：smoke-w4.yaml 五单元 brief 值恰为相对形态（现网全 complete 故休眠）。
+- **来源**：计划强制（handoff-inject.sh 钉定代码按 hook 进程 cwd 解析相对 brief 键——2026-09-26 融合批终审评估 loop 自 deferred minor T4② 转入）。
+- **处置方向**：`os.path.join(rnd, brief)` 或 rnd 优先解析；修复需动钉定代码 + ac-94 态 5 补分支，值得独立小批。
+- **状态**：open。重访触发 = 首个相对 brief 键程序出现注入缺失实证，或下次任何批次触碰 handoff-inject.sh 时（顺带补齐头注释在途单元 brief 枚举——deferred T4① 接受现状之附条件）。
 
 ## 附：工具层已登记毛刺（不重复立案）
 

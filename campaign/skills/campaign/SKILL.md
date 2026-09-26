@@ -19,7 +19,7 @@ campaign 域任务的唯一入口。本 skill 只管三件事——域判定、�
 
 输出一行 `✓ 全配` 或 `⚠ 缺 X`（X = 缺席者名）。
 
-桥版本核查（Q4 软警告，不新增停止点）：定位 caliber 仓 campaign-bridge.json（CALIBER_PLUGIN_DIR 环境变量 → 插件 cache 最高版本目录）；读到且其 min_campaign 与本插件 version 不符 → 追加输出一行 `⚠ 桥版本越界（min_campaign=<值>，本插件=<值>）`；桥缺席或解析失败 → 静默跳过。
+桥版本核查（Q4 软警告，不新增停止点）：定位 caliber 仓 campaign-bridge.json（CALIBER_PLUGIN_DIR 环境变量 → 插件 cache 最高版本目录）；读到且本插件 version 低于其 min_campaign → 追加输出一行 `⚠ 桥版本越界（min_campaign=<值>，本插件=<值>）`；桥缺席或解析失败 → 静默跳过。
 
 ## Step 1 — 域判定（顺序仲裁，命中即停）
 
