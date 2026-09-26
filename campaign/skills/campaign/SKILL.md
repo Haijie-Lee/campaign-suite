@@ -2,7 +2,7 @@
 name: campaign
 description: Use when a task shows campaign-domain signals — orchestrating a multi-unit program (program.yaml, 多 plan, 跨会话), ingesting a non-conformant requirements document (巨石单文件 / 散乱笔记 / 旧 SRS / 聊天记录), transforming a mature plan/solution document into an ingestible SRS (成熟方案文档 → 需求规格文档), producing or revising an SRS, or resuming .campaign program state — the campaign entry router (域判定 → ingest-forge / trans-forge / spec-forge / program-forge). Not for ordinary single-plan engineering tasks — those go to caliber.
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   source: campaign-w6
 ---
 
@@ -18,6 +18,8 @@ campaign 域任务的唯一入口。本 skill 只管三件事——域判定、�
 - 缺 caliber → 「非本域」出口改报（逐字）：`非 campaign 域，且 caliber 缺席——请用户直述处置。`
 
 输出一行 `✓ 全配` 或 `⚠ 缺 X`（X = 缺席者名）。
+
+桥版本核查（Q4 软警告，不新增停止点）：定位 caliber 仓 campaign-bridge.json（CALIBER_PLUGIN_DIR 环境变量 → 插件 cache 最高版本目录）；读到且其 min_campaign 与本插件 version 不符 → 追加输出一行 `⚠ 桥版本越界（min_campaign=<值>，本插件=<值>）`；桥缺席或解析失败 → 静默跳过。
 
 ## Step 1 — 域判定（顺序仲裁，命中即停）
 
