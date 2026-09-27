@@ -121,7 +121,7 @@ def check2():
     if not os.path.isfile(CAMPAIGN_SKILL):
         return False, "campaign SKILL.md 不存在"
     body = read_text(CAMPAIGN_SKILL)
-    n = body.count("\n") + 1
+    n = len(body.splitlines())
     if n > 100:
         return False, "campaign SKILL.md 行数 %d > 100" % n
     for s in ("按序过五条分支", "3. trans 域",
