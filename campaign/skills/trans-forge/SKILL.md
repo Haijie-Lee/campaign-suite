@@ -2,7 +2,7 @@
 name: trans-forge
 description: "Use when transforming a mature plan/solution document (现状论证+路线裁定+蓝图+里程碑+风险登记，含已裁定决策注册表) into an ingestible SRS-with-architecture deliverable (需求规格与技术架构方案). Not for ingesting non-conformant existing documents (use ingest-forge); not for producing an SRS zero-to-one or revising an ingested workspace (use spec-forge)."
 metadata:
-  version: "0.1.1"
+  version: "0.1.2"
   source: campaign-w6
 ---
 
@@ -77,6 +77,8 @@ fresh 零背景 agent，read-only。范围 = FR / AC / 契约节（裁剪制，�
 三证过 → 双产物落盘：
 - 转化文档 `docs/spec/<date>-<slug>-需求规格与技术架构方案.md`
 - 收编预案五件套 `.campaign/ingest/<slug>/{profile.md, mapping.md, q-table.md, evidence-register.md, exit/{lint.txt, coverage.txt, q-check.txt}}`（文件名与 ingest-forge 出口逐字一致）
+
+经 campaign 入口进入时：出口证齐后经 Skill 工具调用 campaign 推进流水线回路；独立使用忽略本行。
 
 ## 分工节
 

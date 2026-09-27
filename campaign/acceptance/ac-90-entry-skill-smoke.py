@@ -81,7 +81,7 @@ def check1():
 
 
 def check2():
-    """触发面契约：frontmatter 含 name/version/0.3.0/campaign-w6，description 含六子串。"""
+    """触发面契约：frontmatter 含 name/version(X.Y.Z 形态)/campaign-w6，description 含六子串。"""
     if not os.path.isfile(SKILL_PATH):
         return False, "SKILL.md 不存在: %s" % SKILL_PATH
     fm, _ = split_frontmatter(read_text(SKILL_PATH))
@@ -90,9 +90,12 @@ def check2():
     if "name: campaign" not in fm:
         return False, "frontmatter 缺「name: campaign」"
     md = _metadata_block(fm)
-    for s in ("version:", "0.3.0", "campaign-w6"):
+    for s in ("version:", "campaign-w6"):
         if s not in md:
             return False, "metadata 块缺子串 %r" % s
+    m = re.search(r'version:\s*"(\d+\.\d+\.\d+)"', md)
+    if not m:
+        return False, "metadata version 非 X.Y.Z 形态"
     desc_line = next((ln for ln in fm.split("\n")
                       if ln.strip().startswith("description:")), None)
     if desc_line is None:

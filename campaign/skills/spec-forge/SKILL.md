@@ -2,7 +2,7 @@
 name: spec-forge
 description: "Use when producing or revising an SRS (zero-to-one or increment), L-level routed alongside plan-forge. Not for ingesting non-conformant documents (use ingest-forge); not for task implementation plans (use plan-forge)."
 metadata:
-  version: "0.1.1"
+  version: "0.1.2"
   source: campaign-w3
 ---
 
@@ -83,6 +83,8 @@ plan-review-ritual Step 0-4）。替换的只是注入的 CHECKLIST：
 「我会如何实现它、如何验证它」，报告歧义点与不可验证点（测单解释性，对齐
 ISO 29148 的 unambiguous + verifiable）。困惑点位回工序 2 补全——不是嘴上
 答「显然」。派遣 prompt 骨架与回收检查读 `checklists.md` 工序 4 节。
+
+经 campaign 入口进入时：出口证齐后经 Skill 工具调用 campaign 推进流水线回路；独立使用忽略本行。
 
 ## 与 ingest-forge 的分工
 

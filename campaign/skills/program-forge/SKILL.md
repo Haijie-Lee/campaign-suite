@@ -2,7 +2,7 @@
 name: program-forge
 description: 编排多单元程序（读 DAG → 派单元 → 收账 → 过门 → 对账）。当任务被分解为 program.yaml 中的多个有依赖关系的单元、需要跨 plan/跨会话编排时使用。不用于：单 plan 任务（caliber 直跑）、SRS 生产（spec-forge）、文档收编（ingest-forge）。
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   source: campaign-w4
 ---
 
@@ -23,7 +23,11 @@ metadata:
     检查脚本据此定位当前单元、程序文件与工程根；多项检查用 wrapper
     脚本收口）。
     可选 `fold_grant: srs_frozen` = 方案确认停折叠预授权（见 F1 步 4）；缺省 = 不折叠。
-  - unit 键：`id` / `title` / `status`（pending/in_progress/complete/blocked）/
+    可选 `planning: rolling` = rolling DAG 模式（缺省 = 非 rolling，v1 串行不变，
+    见下「rolling DAG」节）；可选 `anchor: <注册表路径>` = 锚点注册表覆盖
+    （缺省 = SRS/doc_graph 现状；声明性键——program.py 本批未消费，预留，
+    见 known-issues KI-19）。
+  - unit 键：`id` / `title` / `status`（pending/sketch/in_progress/complete/blocked）/
     `depends` `gate`（inline list）/ `parallel`（v1 恒 `-`）/ `brief` /
     `result` / `plan` / `budget_s`。
   - parser 限制（program.py 迷你 YAML 子集）：键名仅 [A-Za-z_]；
@@ -77,13 +81,28 @@ LOOP：
 ruling 入账时必到对账点（reconcile-check 判定式承载）。
 单元边界（gate 后）与停止点 = resume note 更新点（K22）。
 
+## rolling DAG（meta `planning: rolling` 时启用）
+
+- sketch 语义：远景单元显式四键形态（id/title/`status: sketch`/depends，
+  depends 可 `[]`），不进 eligible、不可 start（program.py 显式报错，须先
+  细化）；不存在「无 status 键的 sketch」。
+- 细化三操作：`refine`（sketch→pending，title/gate/result 等七键补齐）/
+  `add-sketch` / `drop-sketch`——折叠三条件全满足 → rulings not stalls
+  （program.py `--ruling` 参数落账）；改动 in_progress/complete 单元或其
+  依赖边 → 停点①原样触发。
+- explore 单元：画像性质=调研的单元可声明开创性信号 → 该单元的 caliber
+  运行走 deep-probe 全剂量档；产出 = DAG 修订提案（refine/add-sketch/
+  drop-sketch 建议清单），对账点批量上裁定。
+- 折叠三条件与 fold_grant 正交（C5）：细化折叠管 DAG 修订、fold_grant 管
+  方案确认停，二者共存合法；lint 遇共存出 WARN 提醒，不阻断。
+
 ## 接口包契约（K21）
 
 **输入包** `<id>-brief.md`（program → caliber，骨架 ≤60 行 + 工程约定节
 ≤28 行，总预算 90 行——超线 stdout WARN 不硬失败，固定八节序）：
 `# Unit Brief` → 派生声明注释行（brief 是纯派生工件，禁手改——改内容
 请改源 program.yaml / 约定文件）→ `## 编排身份`（程序名/单元 id/还账契约/门证据清单/生存包指针 + 桥机制义务行——全部由 program.py 机械装配）→ `## 单元目标` → `## SRS 锚点`
-（FR/NFR/C/Q/AC ID + doc_graph 定位 file:line）→ `## 前序接口产物`
+（锚点源 = meta `anchor:` 声明的注册表，缺省 SRS/doc_graph；该节列单元 title 中提取的 ID + 注册表定位 file:line）→ `## 前序接口产物`
 （depends 单元 result 指针）→ `## Global Constraints 候选`（D1–D4
 编排纪律）→ `## 工程约定`（约定文件全文注入；缺席 = 占位行；超 25
 内容行截断 + 截断标记 + WARN）→ `## 验收锚`（关联 AC + 固定行
@@ -121,7 +140,8 @@ ledger）照留，两者分工不互相复制内容。
   「归档，不再更新」+ 消费指针后停更。
 - 内容五件（宜 ≤40 行）：当前状态指针（program.py status 可复核的摘要 +
   在途单元/分支）/ 已记账 ruling（重启不丢的裁定）/ 下一步（机械动作序）/
-  已裁定备案（用户指令与默认值）/ 收口归档段。
+  已裁定备案（用户指令与默认值）/ 收口归档段。追加第六件可选——
+  `charter 道状态`（流水线驱动模式下：charter 路径 + 当前复量计数）。
 - hook 送达：SessionStart 注入工程根 handoff.md 与全部
   `*-resume-note.md`（归档件同样注入——留档优先于注入体积，体积失控再治）。
 

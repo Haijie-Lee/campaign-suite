@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # campaign 插件 SessionStart hook：工程有 .campaign/handoff.md 或
-# .campaign/program/*-resume-note.md 则注入（生存包，K22）
+# .campaign/program/*-resume-note.md 或 .campaign/pipeline/*.md 则注入（生存包，K22）
 # 契约：stdout=单行 JSON 或空输出；exit 恒 0；文件缺失/解析失败静默
 # 工程根解析（短路顺序钉死）：ZCODE_PROJECT_DIR → CLAUDE_PROJECT_DIR → stdin(cwd/project_dir/projectDir) → PWD
+# 相对 brief 键按程序目录解析（KI-18）；yaml 键写 MSYS 绝对形态（/f/...）时
+# Windows ntpath isabs 判 True 但 open 可能失败——既有边缘输入，仅标注不处置
 PROJ="${ZCODE_PROJECT_DIR:-${CLAUDE_PROJECT_DIR:-}}"
 PY=$(command -v python 2>/dev/null || command -v python3 2>/dev/null || true)
 [ -n "$PY" ] || exit 0
@@ -28,19 +30,21 @@ fi
 
 HF="$PROJ/.campaign/handoff.md"
 RND="$PROJ/.campaign/program"
-[ -f "$HF" ] || [ -d "$RND" ] || exit 0
+PLD="$PROJ/.campaign/pipeline"
+[ -f "$HF" ] || [ -d "$RND" ] || [ -d "$PLD" ] || exit 0
 
 # MSYS → Windows 路径归一化（bash 的 [ -f ] 认 /c/...，Windows python 的 open() 不认；
 # cygpath 不可用时原样传递——Windows 形式输入自然兼容）
 HF_WIN=$(cygpath -w "$HF" 2>/dev/null || printf '%s' "$HF")
 RND_WIN=$(cygpath -w "$RND" 2>/dev/null || printf '%s' "$RND")
+PLD_WIN=$(cygpath -w "$PLD" 2>/dev/null || printf '%s' "$PLD")
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 TOOLS_WIN=$(cygpath -w "$SCRIPT_DIR/../tools" 2>/dev/null || printf '%s' "$SCRIPT_DIR/../tools")
 
 "$PY" -c "
 import glob,json,os,sys
-hf,rnd,tools=sys.argv[1],sys.argv[2],sys.argv[3]
+hf,rnd,tools,pld=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4]
 parts=[]; names=[]
 if os.path.isfile(hf):
     try:
@@ -52,6 +56,16 @@ for f in sorted(glob.glob(os.path.join(rnd,'*-resume-note.md'))):
     try:
         parts.append('--- .campaign/program/'+os.path.basename(f)+' ---\n'+open(f,encoding='utf-8').read())
         names.append('.campaign/program/'+os.path.basename(f))
+    except Exception:
+        pass
+for f in sorted(glob.glob(os.path.join(pld,'*.md'))):
+    try:
+        t=open(f,encoding='utf-8').read()
+        lines=t.splitlines()
+        if len(lines)>40:
+            t='\n'.join(lines[:40])+'\n…（charter 超预算截断）'
+        parts.append('--- .campaign/pipeline/'+os.path.basename(f)+'（流水线 charter） ---\n'+t)
+        names.append('.campaign/pipeline/'+os.path.basename(f))
     except Exception:
         pass
 # A2：在途单元 brief 注入（串行 v1：每程序至多 1 个 in_progress）
@@ -69,7 +83,9 @@ if _prog is not None:
         for u in p.units:
             if u.get('status') != 'in_progress':
                 continue
-            bp = str(u.get('brief') or os.path.join(rnd, u['id']+'-brief.md'))
+            bp = str(u.get('brief') or '')
+            bp = '' if bp == '-' else bp
+            bp = bp if os.path.isabs(bp) else os.path.join(rnd, bp or (u['id']+'-brief.md'))
             if os.path.isfile(bp):
                 try:
                     rel = '.campaign/program/'+os.path.basename(bp)
@@ -81,5 +97,5 @@ if not parts:
     raise SystemExit
 tail='\n\n> 以上来自 '+ '、'.join(names) +'（campaign 生存包）'
 print(json.dumps({'hookSpecificOutput':{'hookEventName':'SessionStart','additionalContext':'\n\n'.join(parts)+tail}},ensure_ascii=False))
-" "$HF_WIN" "$RND_WIN" "$TOOLS_WIN" 2>/dev/null
+" "$HF_WIN" "$RND_WIN" "$TOOLS_WIN" "$PLD_WIN" 2>/dev/null
 exit 0

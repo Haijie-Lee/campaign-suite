@@ -122,7 +122,7 @@
 - **现象**：ac-90 check4 / ac-92 check4 以字面值（`v != "0.5.0"`）钉定三 manifest 版本、ac-90 check2 钉 skill 版本字面值 `0.2.0`——验收断言与版本号集互相咬死：每次升版必连带改断言，漏改即红。2026-09-26 融合批升版（campaign 0.5.1→0.6.0、skill 0.2.0→0.3.0）基线实证字面值断言即刻失同步。
 - **来源**：计划强制（ac-90/ac-92 系各波 plan 逐字钉定的验收脚本，版本字面值随当时版本写入）。
 - **处置方向**：check4 动态化——逐处 `re.fullmatch(r"\d+\.\d+\.\d+")` 形态校验 + 三处互等（`len(set(...)) != 1`），断言不再含版本字面值；check2 跟随升版同步。ac-90 check2 字面值（`0.3.0`）为同族残留——下次 campaign skill 升版批同款动态化（重访触发）。
-- **状态**：closed（2026-09-26，融合批 T10 已落地）。
+- **状态**：closed（2026-09-26，融合批 T10 已落地）。同族残留（ac-90 check2 字面值 `0.3.0`）已于 2026-09-28 流水线驱动批 T5 同款动态化（`re.search` X.Y.Z 形态断言，断言面零版本字面值），残留清零。
 
 ## KI-17 ui-forge campaign gate 消费点声明后零消费（手工接线必败实证）
 
@@ -136,7 +136,14 @@
 - **现象**：程序 yaml 声明相对形态 `brief:` 键 + 单元 in_progress + hook 进程 cwd ≠ 工程根时，`os.path.isfile(bp)` 落空且相对键无默认路径回退——compact 后静默丢在途单元 brief 注入（恰是 A2 注入要根除的失忆形态）。实证：smoke-w4.yaml 五单元 brief 值恰为相对形态（现网全 complete 故休眠）。
 - **来源**：计划强制（handoff-inject.sh 钉定代码按 hook 进程 cwd 解析相对 brief 键——2026-09-26 融合批终审评估 loop 自 deferred minor T4② 转入）。
 - **处置方向**：`os.path.join(rnd, brief)` 或 rnd 优先解析；修复需动钉定代码 + ac-94 态 5 补分支，值得独立小批。
-- **状态**：open。重访触发 = 首个相对 brief 键程序出现注入缺失实证，或下次任何批次触碰 handoff-inject.sh 时（顺带补齐头注释在途单元 brief 枚举——deferred T4① 接受现状之附条件）。
+- **状态**：closed（2026-09-28，流水线驱动批 T4）。修复 = bp 相对键按程序目录（rnd）回退解析（`os.path.isabs` 守卫，空串视同缺键走缺省名）；ac-94 态 5 补 U-10 相对键分支（与 U-9 缺省分支并存，断言按修前必红设计）；头注释在途单元 brief 枚举与注入面（`.campaign/pipeline/*.md`）同批补齐。fixture 直跑实证：相对 brief 内容命中注入。
+
+## KI-19 meta `anchor:` 键声明性落地，cmd_brief 消费端未接（文档-行为分叉）
+
+- **现象**：program.yaml 声明 meta `anchor: <注册表路径>` 后，`program.py brief` 的锚点定位仍硬编码 `.campaign/graph/graph.json`（program.py grep "anchor" 零命中），静默走缺省源——声明者不被告知键未生效。
+- **来源**：2026-09-28 流水线驱动批 T6 独立审查（code-review 位）发现；plan C3 自知「无码改」（parser 天然容纳新键），T6 文档规格与消费端缺口为 plan 内生分叉。
+- **处置方向**：cmd_brief 注册表定位改读 `prog.meta.get("anchor")` 覆盖（缺省行为不变）+ ac-9x 补分支；小改，随下批。
+- **状态**：open。重访触发 = 首个在程序中声明 `anchor:` 键的用户实证，或下次触碰 cmd_brief 时。缓解：program-forge SKILL.md schema 节 anchor 键定义点已标注「声明性键，本批未消费」。
 
 ## 附：工具层已登记毛刺（不重复立案）
 

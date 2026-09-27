@@ -2,7 +2,7 @@
 
 > 最后更新：2026-09-25 ｜ 平台形态出处：`caliber-suite`（同机已验证的本地目录 marketplace 模式）
 
-ZCode **本地目录 marketplace**（名 `campaign-suite`），当前只含一个插件 **campaign v0.6.0**：超大规模开发任务的编排套件，layered on caliber——总入口 skill campaign + 四个 forge skills（ingest-forge / trans-forge / spec-forge / program-forge）+ 一个证据审计 agent（evidence-auditor）+ 四个 spec 守护 hook + 五个零第三方依赖契约工具，经本地 marketplace 一次安装、随插件自动加载。
+ZCode **本地目录 marketplace**（名 `campaign-suite`），当前只含一个插件 **campaign v0.6.5**：超大规模开发任务的编排套件，layered on caliber——总入口 skill campaign + 四个 forge skills（ingest-forge / trans-forge / spec-forge / program-forge）+ 一个证据审计 agent（evidence-auditor）+ 四个 spec 守护 hook + 五个零第三方依赖契约工具，经本地 marketplace 一次安装、随插件自动加载。
 
 ## 核心定位
 
@@ -35,6 +35,8 @@ ZCode **本地目录 marketplace**（名 `campaign-suite`），当前只含一�
 | `conventions/` | 契约 | 结果落盘契约（K4）+ result 模板——dispatch 执行单元的落盘纪律 |
 | `acceptance/` | 验收基座 | 通用 runner（run_all.py + README），机制与具体项目条目分离 |
 
+0.6.5 起兼注 .campaign/pipeline/*.md 流水线 charter（KI-18 相对 brief 键解析同步修复）
+
 五个工具均零第三方依赖，Python 3.10+。各 hook 的契约说明在同目录 `.md`（`hooks/handoff.md` 是 hook 只读注入的生存包本体）。
 
 ## 目录树（按实物）
@@ -46,7 +48,7 @@ campaign-suite/
 │   └── marketplace.json        # ZCode 实际读取的 manifest
 ├── campaign/                   # 插件目录（marketplace.json 的 plugins[0].source: "./campaign"）
 │   ├── .zcode-plugin/
-│   │   └── plugin.json         # {"name":"campaign","version":"0.6.0"}
+│   │   └── plugin.json         # {"name":"campaign","version":"0.6.5"}
 │   ├── skills/
 │   │   ├── campaign/           # SKILL.md（总入口：域判定→路由→守停止点）
 │   │   ├── ingest-forge/       # SKILL.md + templates/（映射表、Q 表模板）

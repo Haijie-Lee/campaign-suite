@@ -76,6 +76,15 @@ WAVE_FILES = [
     "docs/plans/2026-09-23-trans-forge-plan.md",
     "docs/plans/2026-09-26-campaign-caliber-fusion-plan.md",
     "docs/known-issues.md",
+    "campaign/skills/ingest-forge/SKILL.md",
+    "campaign/skills/spec-forge/SKILL.md",
+    "campaign/skills/program-forge/SKILL.md",
+    "campaign/tools/program.py",
+    "campaign/hooks/handoff-inject.sh",
+    "campaign/acceptance/ac-94-bridge-behavior.py",
+    "campaign/acceptance/ac-95-pipeline-driver.py",
+    "campaign/skills/campaign/references/pipeline-cases.md",
+    "docs/plans/2026-09-27-campaign-pipeline-driver-plan.md",
 ]
 # 预存基线豁免（wave 前已存在未跟踪件；.caliber/ .campaign/ 已 gitignore 天然豁免）
 WAVE_EXEMPT = {"?? campaign/tools/__pycache__/"}

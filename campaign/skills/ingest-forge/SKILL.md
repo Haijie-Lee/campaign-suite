@@ -2,7 +2,7 @@
 name: ingest-forge
 description: "Use when receiving a non-conformant requirements/architecture document (monolith, scattered notes, legacy SRS) that must be ingested into the campaign workspace topology before any downstream flow. Not for writing new specs from scratch."
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   source: campaign-w2
 ---
 
@@ -62,6 +62,8 @@ metadata:
 | lint.txt | 引用图建成功 + 孤儿报告落盘 | `python campaign/tools/doc_graph.py build <源文档>` → `orphans --graph .campaign/graph/graph.json --out .campaign/ingest/<slug>/exit/lint.txt` |
 | coverage.txt | 追溯矩阵初始版 | `python campaign/tools/doc_graph.py coverage --graph .campaign/graph/graph.json > .campaign/ingest/<slug>/exit/coverage.txt` |
 | q-check.txt | **真实 ingest = Q 表清零**（无 pending）；**自验证限定 = 格式合规**（表头正确 + 每表格行 `awk -F'|' NF=8`）——豁免仅限无人裁定的自验证场景，真实 ingest 不免 | `grep '^|' q-table.md \| awk -F'|' 'NF!=8' \| wc -l` → 0 |
+
+经 campaign 入口进入时：出口证齐后经 Skill 工具调用 campaign 推进流水线回路；独立使用忽略本行。
 
 ## 与 spec-forge 的分工
 

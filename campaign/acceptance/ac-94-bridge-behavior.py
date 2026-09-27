@@ -85,6 +85,11 @@ WAVE_FILES = [
     "README.md",
     "docs/known-issues.md",
     "docs/plans/2026-09-26-campaign-caliber-fusion-plan.md",
+    "campaign/skills/ingest-forge/SKILL.md",
+    "campaign/skills/trans-forge/SKILL.md",
+    "campaign/acceptance/ac-95-pipeline-driver.py",
+    "campaign/skills/campaign/references/pipeline-cases.md",
+    "docs/plans/2026-09-27-campaign-pipeline-driver-plan.md",
 ]
 # 预存豁免（wave 前已存在的未跟踪件，brief 逐字；.caliber/ .campaign/ 已
 # gitignore 天然豁免）
@@ -334,8 +339,10 @@ def check4():
 
 
 def hook_fixture_yaml():
-    """态 5 hook 侧 prog.yaml：单单元 U-9 in_progress、无 brief 键 → hook 走
-    缺省 brief 路径分支。零注释、零制表符。"""
+    """态 5 hook 侧 prog.yaml：U-9 in_progress 无 brief 键（缺省路径分支）+
+    U-10 in_progress 相对 brief 键（KI-18 修复分支：相对键按程序目录解析；
+    断言按修前必红设计）+ U-11 in_progress `brief: -` 占位（视同缺键走缺省路径，
+    T3 步 3.5 占位语义 hook 侧联动）。零注释、零制表符。"""
     lines = [
         "program: ac-94-hook-fixture",
         "context: ac-94 state5 hook fixture",
@@ -346,6 +353,16 @@ def hook_fixture_yaml():
         "  - id: U-9",
         "    title: hook fixture unit",
         "    status: in_progress",
+        '    parallel: "-"',
+        "  - id: U-11",
+        "    title: hook fixture dash brief unit",
+        "    status: in_progress",
+        '    brief: "-"',
+        '    parallel: "-"',
+        "  - id: U-10",
+        "    title: hook fixture relative brief unit",
+        "    status: in_progress",
+        "    brief: U-10-brief.md",
         '    parallel: "-"',
     ]
     return "\n".join(lines) + "\n"
@@ -361,6 +378,10 @@ def check5():
         write_text(os.path.join(progdir, "prog.yaml"), hook_fixture_yaml())
         write_text(os.path.join(progdir, "U-9-brief.md"),
                    "# Unit Brief: U-9\n\nA2-MARKER-9941 在途 brief 正文。\n")
+        write_text(os.path.join(progdir, "U-10-brief.md"),
+                   "# Unit Brief: U-10\n\nA2-REL-MARKER-4410 相对键 brief 正文。\n")
+        write_text(os.path.join(progdir, "U-11-brief.md"),
+                   "# Unit Brief: U-11\n\nA2-DASH-MARKER-1100 占位键 brief 正文。\n")
         env = os.environ.copy()
         env.pop("ZCODE_PROJECT_DIR", None)
         env.pop("CLAUDE_PROJECT_DIR", None)
@@ -398,7 +419,15 @@ def check5():
             return False, "additionalContext 缺标记串 A2-MARKER-9941: %r" % ctx[:200]
         if "在途单元 brief，A2" not in ctx:
             return False, "additionalContext 缺「在途单元 brief，A2」标记: %r" % ctx[:200]
-    return True, "A2 hook：单行 strict JSON + additionalContext 含 marker 与 A2 标记"
+        # KI-18 分支：相对 brief 键（U-10）须按程序目录解析命中——修前 isfile 落空
+        # 静默丢注入，本断言修前必红（不实测红态，T9 统一跑）
+        if "A2-REL-MARKER-4410" not in ctx:
+            return False, "additionalContext 缺相对键标记 A2-REL-MARKER-4410（KI-18 未修复？）: %r" % ctx[:200]
+        # brief: - 占位分支（U-11）：`-` 视同缺键走缺省路径——rolling refine 缺省
+        # 即写 brief: -，缺该回退则 rolling 标准流 A2 注入整条落空（MEDIUM 守卫）
+        if "A2-DASH-MARKER-1100" not in ctx:
+            return False, "additionalContext 缺占位键标记 A2-DASH-MARKER-1100（brief: - 未回退缺省路径？）: %r" % ctx[:200]
+    return True, "A2 hook：strict JSON + marker×2 + 相对键/占位键 marker（KI-18 + brief:- 联动）"
 
 
 def check6(notes):

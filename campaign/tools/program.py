@@ -11,7 +11,7 @@ import subprocess
 import sys
 from datetime import datetime
 
-STATUS_ENUM = ("pending", "in_progress", "complete", "blocked")
+STATUS_ENUM = ("pending", "sketch", "in_progress", "complete", "blocked")
 ID_RE = re.compile(r"(?<![A-Za-z0-9])(?:FR-\d+(?:\.\d+)?|NFR-\d+(?:\.\d+)?|R\d+|D\d+|C\d+|Q\d+|AC-\d+)(?![A-Za-z0-9])")
 
 
@@ -217,7 +217,9 @@ def bridge_hits(bridge, unit, ws):
 
 
 def _result_path(u):
-    return str(u.get("result") or "")
+    """result 键消费口径：缺键 / 空串 / 占位 `-`（rolling 缺省）一律视为未声明。"""
+    v = str(u.get("result") or "")
+    return "" if v in ("", "-") else v
 
 
 def lint(prog):
@@ -262,6 +264,9 @@ def lint(prog):
     cpath = str(prog.meta.get("conventions") or "CONVENTIONS.md")
     if not os.path.exists(cpath) and _lint_cmd(prog) is None:
         warns.append("程序零工程约定机械覆盖——风格约束仅靠 agent 自律（约定文件 %s 缺席且无 lint_cmd）" % cpath)
+    # C5：rolling × fold_grant 双重折叠提醒（不阻断）
+    if str(prog.meta.get("planning")) == "rolling" and "fold_grant" in prog.meta:
+        warns.append("rolling 程序声明 fold_grant，双重折叠叠加需程序作者自知")
     return errs, warns
 
 
@@ -380,7 +385,9 @@ def cmd_brief(args):
         for ob in e.get("brief_obligations", []):
             idx = lines.index("## 单元目标")
             lines.insert(idx - 1, "- 机制义务（桥 %s）：%s" % (e.get("skill", "?"), ob))
-    out = str(u.get("brief") or os.path.join(".campaign", "program", "%s-brief.md" % u["id"]))
+    out_bp = u.get("brief")
+    out = (str(out_bp) if out_bp not in (None, "", "-")
+           else os.path.join(".campaign", "program", "%s-brief.md" % u["id"]))
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     if len(lines) > 90:
         print("WARN: brief %d 行超预算 90（不阻断；瘦身顺序：先瘦约定文件）" % len(lines))
@@ -399,6 +406,8 @@ def cmd_start(args):
         prog.save()
         print("%s: blocked -> pending (resumed)" % u["id"])
         return
+    if u["status"] == "sketch":
+        sys.exit("%s: sketch 单元须先细化（refine）为 pending 才可 start" % u["id"])
     if u["status"] != "pending":
         sys.exit("%s: status %s not startable" % (u["id"], u["status"]))
     if u["id"] not in eligible(prog):
@@ -515,6 +524,152 @@ def cmd_reconcile(args):
     print("OK last_reconciled=%d" % comp)
 
 
+# ---------- rolling DAG：sketch 细化三操作（C4） ----------
+
+
+def _atomic_save(prog):
+    """原子落盘：tmp 文件 + os.replace——save() 整文件覆盖写进程中途被杀会
+    截断 program.yaml，而 .campaign/ 通常 gitignore 无 git 兜底。仅 rolling
+    三函数消费；既有 save() 调用点行为面不变。"""
+    tmp = prog.path + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(prog.lines) + "\n")
+    os.replace(tmp, prog.path)
+
+
+def _unit_span(prog, uid):
+    """单元块行区间 [首行, 末行后)：`_idx["id"]` 行起，至下一 `  - id:` 前或
+    units 末（文件尾/下一个非缩进行）。"""
+    u = prog.unit(uid)
+    if not u:
+        sys.exit("no such unit: %s" % uid)
+    start = u["_idx"]["id"]
+    end = len(prog.lines)
+    for i in range(start + 1, len(prog.lines)):
+        if prog.lines[i].startswith("  - id:") or (prog.lines[i] and not prog.lines[i].startswith(" ")):
+            end = i
+            break
+    return u, start, end
+
+
+def _unit_block(fields):
+    """七键序序列化（id/title/status/depends/gate/brief/result）。"""
+    def lv(v):
+        return "[%s]" % ", ".join(str(x) for x in v) if isinstance(v, list) else str(v)
+    return ["  - id: %s" % fields["id"],
+            "    title: %s" % fields["title"],
+            "    status: %s" % fields["status"],
+            "    depends: %s" % lv(fields["depends"]),
+            "    gate: %s" % lv(fields["gate"]),
+            "    brief: %s" % fields["brief"],
+            "    result: %s" % fields["result"]]
+
+
+def _parse_fields(args):
+    """--field k:v 重复项 → dict；按首个 `:` 切分；depends/gate 两键值按
+    inline list 解析（去方括号按 `,` 切分逐项 strip，空串 `[]` → 空 list）。"""
+    out = {}
+    for kv in (args.field or []):
+        if ":" not in kv:
+            sys.exit("--field 缺冒号: %r" % kv)
+        k, v = kv.split(":", 1)
+        if k in ("depends", "gate"):
+            s = v.strip()
+            if s.startswith("[") and s.endswith("]"):
+                body = s[1:-1].strip()
+                out[k] = [x.strip() for x in body.split(",") if x.strip()] if body else []
+            else:
+                sys.exit("--field %s 值须为 inline list [a, b]: %r" % (k, v))
+        else:
+            out[k] = v
+    return out
+
+
+def refine_unit(prog, uid, fields):
+    """sketch → pending 合并语义：以单元现有键为底、fields 覆盖、status 强制
+    pending；title/gate/result 缺一（或 --field v 为空串视同缺）即报错清单。
+    非 sketch 单元拒绝（整块重写会静默丢七键外的键——plan/budget_s/parallel
+    等）；--field 键限 title/depends/gate/brief/result 五键（id 锚定、status
+    强制 pending，plan/budget_s 等非七键不入块）。写后调用方须重新 load
+    （`_idx` 行号已失效）。"""
+    u, start, end = _unit_span(prog, uid)
+    if u.get("status") != "sketch":
+        sys.exit("refine: %s status=%s 非 sketch" % (uid, u.get("status")))
+    merged = {"id": uid,
+              "title": u.get("title", ""),
+              "status": "pending",
+              "depends": u.get("depends", []),
+              "gate": u.get("gate", []),
+              "brief": u.get("brief", "-"),
+              "result": u.get("result", "-")}
+    for k, v in fields.items():
+        if v == "":
+            continue
+        if k not in ("title", "depends", "gate", "brief", "result"):
+            sys.exit("refine: --field 键 %r 不在可细化集（title/depends/gate/brief/result）" % k)
+        merged[k] = v
+    missing = [k for k in ("title", "gate", "result")
+               if merged.get(k) in (None, "", "-") or merged.get(k) == []]
+    if missing:
+        sys.exit("refine: %s 缺键: %s" % (uid, ", ".join(missing)))
+    if merged["brief"] in (None, ""):
+        merged["brief"] = "-"
+    prog.lines[start:end] = _unit_block(merged)
+    _atomic_save(prog)
+    return load(prog.path)
+
+
+def add_sketch(prog, fields):
+    """文件尾 append sketch 单元（status: sketch；depends/gate 缺省 []；
+    brief/result 缺省 `-`）。必填 id/title。"""
+    if not fields.get("id") or not fields.get("title"):
+        sys.exit("add-sketch: 必填 id 与 title（--field id:... --field title:...）")
+    if prog.unit(fields["id"]):
+        sys.exit("add-sketch: %s 已存在" % fields["id"])
+    blk = {"id": fields["id"], "title": fields["title"], "status": "sketch",
+           "depends": fields.get("depends", []), "gate": fields.get("gate", []),
+           "brief": fields.get("brief") or "-", "result": fields.get("result") or "-"}
+    prog.lines.extend(_unit_block(blk))
+    _atomic_save(prog)
+    return load(prog.path)
+
+
+def drop_sketch(prog, uid):
+    """整块剔除 sketch 单元；非 sketch 拒绝。"""
+    u, start, end = _unit_span(prog, uid)
+    if u.get("status") != "sketch":
+        sys.exit("drop-sketch: %s status=%s 非 sketch" % (uid, u.get("status")))
+    del prog.lines[start:end]
+    _atomic_save(prog)
+    return load(prog.path)
+
+
+def cmd_refine(args):
+    prog = load(args.program)
+    prog = refine_unit(prog, args.unit, _parse_fields(args))
+    ledger_append(ledger_path(args, prog), "ruling", unit=args.unit,
+                  detail="refine %s: sketch->pending, 折叠三条件核对=%s" % (args.unit, args.ruling))
+    print("refine: %s sketch -> pending" % args.unit)
+
+
+def cmd_add_sketch(args):
+    prog = load(args.program)
+    fields = _parse_fields(args)
+    uid = fields.get("id", "?")
+    prog = add_sketch(prog, fields)
+    ledger_append(ledger_path(args, prog), "ruling", unit=uid,
+                  detail="add-sketch %s, 折叠三条件核对=%s" % (uid, args.ruling))
+    print("add-sketch: %s" % uid)
+
+
+def cmd_drop_sketch(args):
+    prog = load(args.program)
+    prog = drop_sketch(prog, args.unit)
+    ledger_append(ledger_path(args, prog), "ruling", unit=args.unit,
+                  detail="drop-sketch %s, 折叠三条件核对=%s" % (args.unit, args.ruling))
+    print("drop-sketch: %s" % args.unit)
+
+
 def cmd_impact(args):
     """B6 反向互查（K23）：以 program.yaml 内非空 plan 字段为扫描池。"""
     from spec_impact import scan
@@ -559,6 +714,15 @@ def main():
     sp.set_defaults(fn=cmd_reconcile)
     sp = base("impact"); sp.add_argument("--ids", required=True)
     sp.set_defaults(fn=cmd_impact)
+    sp = base("refine"); sp.add_argument("--unit", required=True)
+    sp.add_argument("--field", action="append"); sp.add_argument("--ruling", required=True)
+    sp.add_argument("--ledger"); sp.set_defaults(fn=cmd_refine)
+    sp = base("add-sketch"); sp.add_argument("--field", action="append")
+    sp.add_argument("--ruling", required=True)
+    sp.add_argument("--ledger"); sp.set_defaults(fn=cmd_add_sketch)
+    sp = base("drop-sketch"); sp.add_argument("--unit", required=True)
+    sp.add_argument("--ruling", required=True)
+    sp.add_argument("--ledger"); sp.set_defaults(fn=cmd_drop_sketch)
     args = p.parse_args()
     args.fn(args)
 
